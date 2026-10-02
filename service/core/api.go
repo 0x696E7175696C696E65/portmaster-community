@@ -128,7 +128,6 @@ func registerAPIEndpoints() error {
 		WriteMethod: "POST",
 		Write:       api.PermitUser,
 		ActionFunc: func(ar *api.Request) (string, error) {
-			module.instance.BinaryUpdates().TriggerUpdateCheck()
 			module.instance.IntelUpdates().TriggerUpdateCheck()
 			return "update check triggered", nil
 		},
@@ -142,7 +141,6 @@ func registerAPIEndpoints() error {
 		WriteMethod: "POST",
 		Write:       api.PermitUser,
 		ActionFunc: func(ar *api.Request) (string, error) {
-			module.instance.BinaryUpdates().TriggerApplyUpdates()
 			module.instance.IntelUpdates().TriggerApplyUpdates()
 			return "upgrade triggered", nil
 		},
@@ -151,21 +149,7 @@ func registerAPIEndpoints() error {
 		return err
 	}
 
-	if err := api.RegisterEndpoint(api.Endpoint{
-		Path:        "updates/from-url",
-		WriteMethod: "POST",
-		Write:       api.PermitAnyone,
-		ActionFunc: func(ar *api.Request) (string, error) {
-			err := module.instance.BinaryUpdates().UpdateFromURL(string(ar.InputData))
-			if err != nil {
-				return err.Error(), err
-			}
-			return "upgrade triggered", nil
-		},
-		Name: "Replace current version from the version supplied in the URL",
-	}); err != nil {
-		return err
-	}
+	// Community binaries are installed manually; arbitrary URL upgrades are disabled.
 
 	if err := api.RegisterEndpoint(api.Endpoint{
 		Name:        "Get Resource",

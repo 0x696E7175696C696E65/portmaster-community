@@ -1,3 +1,4 @@
+import { bandwidthTimeLabel, chartTimeTicks } from './chart-ticks';
 import { coerceBooleanProperty, coerceNumberProperty, coerceStringArray } from '@angular/cdk/coercion';
 import { AfterViewInit, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, Input, OnChanges, OnInit, SimpleChanges, inject } from '@angular/core';
 import { BandwidthChartResult, ChartResult } from '@safing/portmaster-api';
@@ -89,8 +90,7 @@ export const DefaultBandwidthChartConfig: ChartConfig<BandwidthChartResult<any>>
     return prefix + new BytesPipe().transform(n.valueOf())
   },
   timeFormat: (n: Date) => {
-    const diff = Math.floor(new Date().getTime() - n.getTime())
-    return formatDuration(diff, false, true) + " ago"
+    return bandwidthTimeLabel(n)
   },
   tooltipFormat: (n: BandwidthChartResult<any>) => {
     const bytes = new BytesPipe().transform
@@ -488,7 +488,7 @@ export class SfngNetqueryLineChartComponent<D extends SeriesData = any> implemen
     if (this.showAxis) {
       const xAxis = d3
         .axisBottom(this.xScale)
-        .ticks(5)
+        .tickValues(chartTimeTicks(time.from, time.to, this.width - this.yMargin))
         .tickFormat((val, idx) => {
           if (!!this.config.timeFormat) {
             return this.config.timeFormat(val as any)
@@ -497,6 +497,7 @@ export class SfngNetqueryLineChartComponent<D extends SeriesData = any> implemen
         })
 
       this.xAxis.call(xAxis);
+      this.xAxis.selectAll(".tick text").attr("text-anchor", (_, index, nodes) => index === 0 ? "start" : index === nodes.length - 1 ? "end" : "middle");
 
       const yAxis = d3
         .axisLeft(this.yScale)

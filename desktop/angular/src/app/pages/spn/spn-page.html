@@ -1,10 +1,41 @@
-<div class="p-8 text-primary">
-  <h1 class="mb-4 text-xl">Tor and WireGuard routing</h1>
-  <p class="mb-4">Enable the Split Tunnel Module in settings, then enable Use Split Tunnel for each app you want to route.</p>
-  <h2 class="mb-2 text-lg">Tor</h2>
-  <p class="mb-4">Run a local Tor daemon and set the app's Network Interface to tor (127.0.0.1:9050), or tor://127.0.0.1:9150 for another local SOCKS port. TCP uses Tor; UDP is blocked. Keep the Tor daemon's own app routing disabled.</p>
-  <h2 class="mb-2 text-lg">WireGuard</h2>
-  <p class="mb-4">Start your own WireGuard tunnel and set Network Interface to its name or local tunnel IP. Configure the tunnel's routes and AllowedIPs with your WireGuard client. Keep that client's app routing disabled.</p>
-  <p class="mb-4">DNS uses Portmaster's configured resolver separately. Tor routing does not provide Tor Browser fingerprint protection or onion hostname resolution.</p>
-  <a routerLink="/settings" class="underline">Open settings</a>
-</div>
+<main class="p-8 w-full text-secondary">
+  <header class="mb-6">
+    <h1 class="mb-2 text-xl text-primary">Tor and WireGuard routing</h1>
+    <p>Choose a route for each application. Start your tunnel or proxy before configuring Portmaster.</p>
+  </header>
+  <section class="mb-6 p-4 bg-gray-200 rounded">
+    <h2 class="text-lg text-primary mb-2">1. Enable the routing module</h2>
+    <p class="mb-3">Enable Split Tunnel Module, then select the applications you want to route.</p>
+    <a routerLink="/settings" [queryParams]="{setting: 'splittun/enable'}" class="underline text-blue">Open module settings</a>
+    <span class="mx-3">·</span><a routerLink="/app/overview" class="underline text-blue">Choose an application</a>
+  </section>
+  <div class="routing-grid mb-6">
+    <section class="p-6 bg-gray-200 rounded">
+      <h2 class="text-lg text-primary mb-4">2. Route through Tor</h2>
+      <ol class="list-decimal ml-5 space-y-3">
+        <li>Run a local Tor daemon with a SOCKS listener on a loopback address.</li>
+        <li>In the selected application's settings, enable <strong>Use Split Tunnel</strong>.</li>
+        <li>Set <strong>Network Interface</strong> to <code>tor</code> for <code>127.0.0.1:9050</code>, or <code>tor://127.0.0.1:9150</code> for a different port.</li>
+        <li>Keep routing disabled for the Tor daemon itself to avoid a routing loop.</li>
+      </ol>
+      <p class="mt-4">TCP uses the proxy. UDP is blocked. If the proxy cannot be reached, selected TCP connections fail without a direct fallback.</p>
+    </section>
+    <section class="p-6 bg-gray-200 rounded">
+      <h2 class="text-lg text-primary mb-4">2. Route through WireGuard</h2>
+      <ol class="list-decimal ml-5 space-y-3">
+        <li>Start a tunnel in your WireGuard client using your own keys and peer configuration.</li>
+        <li>Configure the tunnel routes and <code>AllowedIPs</code> in that client.</li>
+        <li>Enable <strong>Use Split Tunnel</strong> for the selected application and set <strong>Network Interface</strong> to the tunnel interface name or its local IP.</li>
+        <li>Keep routing disabled for the WireGuard client itself.</li>
+      </ol>
+      <p class="mt-4">Portmaster binds traffic to the selected interface. Tunnel availability and route behavior depend on your operating system and WireGuard configuration.</p>
+    </section>
+  </div>
+  <section class="p-4 bg-gray-200 rounded mb-4">
+    <h2 class="text-lg text-primary mb-2">3. Verify before relying on the route</h2>
+    <p>Check the application's public IP with the tunnel active, then stop the tunnel and confirm the intended behavior. This page does not indicate a verified connection.</p>
+    <p class="mt-3">DNS uses Portmaster's configured resolver separately. Tor routing does not provide circuit isolation, onion hostname resolution, or Tor Browser fingerprint protection.</p>
+    <a routerLink="/settings" [queryParams]="{setting: 'dns/nameservers'}" class="block mt-3 underline text-blue">Review DNS settings</a>
+  </section>
+  <a routerLink="/support" class="underline text-blue">Setup guide and troubleshooting</a>
+</main>

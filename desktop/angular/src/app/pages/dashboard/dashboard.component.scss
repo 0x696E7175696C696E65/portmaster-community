@@ -7,7 +7,7 @@
 
   align-items: stretch;
   justify-items: stretch;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   grid-template-areas:
     "header header header header"
     "feature feature feature feature"
@@ -93,7 +93,7 @@ app-dashboard-widget {
 
   .feature-card-list {
     @apply grid gap-3 w-full;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   }
 
   .mini-stats-list {
@@ -164,3 +164,6 @@ app-dashboard-widget {
     @apply text-xl text-blue;
   }
 }
+
+app-dashboard-widget { min-width: 0; }
+@media (max-width: 700px) { .dashboard-grid { grid-template-columns: minmax(0, 1fr); grid-template-areas: "header" "feature" "stats" "news" "charts" "countries" "blocked" "map" "bwvis-bar" "bwvis-line"; } #header { flex-wrap: wrap; gap: 0.5rem; } }

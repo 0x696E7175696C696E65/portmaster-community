@@ -63,3 +63,9 @@ Building the core does not install its kernel driver or system service. See [the
 Based on Safing's development commit 13a86a43cc6cee592395fcddc8387178f290f144, with upstream Git history retained. Fork changes are dated 2026-10-02. The Go module path remains github.com/safing/portmaster to keep internal imports compatible.
 
 The upstream GPL-3.0 license, copyright notices, and bundled asset licenses are preserved. This fork is not an official Safing release. See [LICENSE](LICENSE).
+
+## Community help and secure development
+
+See [Getting started](docs/community/getting-started.md), [Routing and settings](docs/community/routing.md), [Contributing](CONTRIBUTING.md), and [Security policy](SECURITY.md). The [SSDF process and gap map](docs/security/ssdf.md) records our development requirements and outstanding evidence. This experimental fork does not claim NIST certification or a completed security assessment.
+
+The Git-server workflow is in .gitea/workflows/community-security.yml. It requires a configured isolated Windows runner and server-side required checks; those settings have not been verified. The audit step fails on high or critical inherited dependency findings until they are resolved.

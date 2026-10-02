@@ -6,20 +6,6 @@
         <sfng-tipup key="dashboardIntro" placement="left"></sfng-tipup>
       </h1>
 
-    <!--
-      \\ DISABLED because: Displaying the SPN username in a prominent location may raise security and privacy concerns for some users.
-      
-      <span class="text-sm font-normal text-secondary">
-        <ng-container *ngIf="!!profile; else: noUsername">
-          Welcome back, <span class="text-primary">{{ profile.username }}</span>!
-          <a *ngIf="profile?.state === '' && !!profile?.username" class="text-xs underline cursor-pointer text-tertiary"
-            (click)="logoutCompletely($event)">Clear</a>
-        </ng-container>
-        <ng-template #noUsername>
-          Welcome back!
-        </ng-template>
-      </span>
-    -->
     </div>
 
     <div class="text-sm text-secondary">Community edition · No subscription required</div>
@@ -35,6 +21,7 @@
 
 
   <app-dashboard-widget id="stats" label="Recent Activity">
+    <p *ngIf="statsUnavailable" role="status" class="text-secondary">Connection service unavailable. Showing the last received data; retrying every 10 seconds.</p>
     <!-- Mini Stats -->
     <div class="mini-stats-list">
       <div class="mini-stat" routerLink="/monitor" [queryParams]="{q: 'verdict:3 verdict:4'}">
@@ -54,34 +41,21 @@
 
       <div class="mini-stat">
         <label>Data Received</label>
-        <span *ngIf="featureBw">
+        <span>
           {{ dataIncoming | bytes }}
         </span>
-        <span *ngIf="!featureBw"
-          class="!text-xxs !font-light !text-tertiary !text-opacity-50 w-full text-center !leading-3">
-          Available in<br />Portmaster Plus
-        </span>
+
       </div>
 
       <div class="mini-stat">
         <label>Data Sent</label>
-        <span *ngIf="featureBw">
+        <span>
           {{ dataOutgoing | bytes }}
         </span>
-        <span *ngIf="!featureBw"
-          class="!text-xxs !font-light !text-tertiary !text-opacity-50 w-full text-center !leading-3">
-          Available in<br />Portmaster Plus
-        </span>
+
       </div>
 
-      <div class="mini-stat" routerLink="/monitor" [queryParams]="{q: 'tunneled:true groupby:exit_node'}">
-        <label routerLink="/monitor" [queryParams]="{q: 'tunneled:true groupby:exit_node'}">SPN Identities</label>
-        <span *ngIf="featureSPN">{{ activeIdentities }}</span>
-        <span *ngIf="!featureSPN"
-          class="!text-xxs !font-light !text-tertiary !text-opacity-50 w-full text-center !leading-3">
-          Available in<br />Portmaster Pro
-        </span>
-      </div>
+
     </div>
   </app-dashboard-widget>
 
@@ -94,23 +68,7 @@
         <sfng-netquery-line-chart activeConnectionColor="text-green-300 text-opacity-70" class="w-full !h-36"
           [data]="connectionChart"></sfng-netquery-line-chart>
       </div>
-      <div class="mini-stat" *ngIf="featureSPN">
-        <label routerLink="/monitor" [queryParams]="{q: 'tunneled:true'}">
-          Connections Tunneled through SPN
-        </label>
-        <sfng-netquery-line-chart
-          [config]="{
-            series: {
-              value: {
-                lineColor: 'text-blue text-opacity-80',
-                areaColor: 'text-blue text-opacity-20',
-              }
-            }
-          }"
-          class="w-full !h-36"
-          [data]="tunneldConnectionChart">
-        </sfng-netquery-line-chart>
-      </div>
+
     </div>
   </app-dashboard-widget>
 
@@ -167,71 +125,36 @@
     <spn-map-renderer class="w-full h-full" mapId="dashboard-map"></spn-map-renderer>
   </app-dashboard-widget>
 
-  <app-dashboard-widget class="flex-grow" id="bwvis-bar" [ngStyle]="{minHeight: featureBw ? '400px' : 'unset'}" label="Recent Top Consumers" beta="true">
-    <sfng-netquery-circular-bar-chart *ngIf="featureBw" class="block w-full h-full" [data]="bandwidthBarData" [config]="bandwidthBarConfig"></sfng-netquery-circular-bar-chart>
-
-    <span *ngIf="!featureBw"
-      class="!text-xxs !font-light !text-tertiary !text-opacity-50 w-full text-center !leading-3">
-      Available in Portmaster Plus
-    </span>
+  <app-dashboard-widget class="flex-grow" id="bwvis-bar" label="Recent Top Consumers">
+    <p *ngIf="statsPending && !statsUnavailable" role="status" class="text-secondary">Loading bandwidth activity…</p>
+    <p *ngIf="!statsPending && !bandwidthBarData.length" class="text-secondary">No application bandwidth recorded in the recent live connection window.</p>
+    <ol class="flex flex-col gap-3 w-full list-none">
+      <li *ngFor="let entry of bandwidthBarData" class="p-3 bg-gray-300 rounded">
+        <a routerLink="/monitor" [queryParams]="{q: 'profile:' + entry.profile}" class="flex items-center justify-between gap-3 text-secondary hover:underline">
+          <span class="truncate" [title]="entry.profile_name">{{ entry.profile_name }}</span>
+          <span class="flex-shrink-0">{{ entry.value | bytes }}</span>
+        </a>
+        <div class="mt-2 h-1 bg-gray-400 rounded overflow-hidden" aria-hidden="true">
+          <div class="h-full bg-blue" [style.width.%]="entry.value / bandwidthBarData[0].value * 100"></div>
+        </div>
+        <p class="mt-2 text-xs text-tertiary">Sent {{ entry.sent | bytes }} · Received {{ entry.received | bytes }}</p>
+      </li>
+    </ol>
   </app-dashboard-widget>
 
-  <app-dashboard-widget class="flex-grow" id="bwvis-line" [ngStyle]="{minHeight: featureBw ? '400px' : 'unset'}" label="Recent Bandwidth Usage" beta="true">
-    <sfng-netquery-line-chart class="block w-full h-full" *ngIf="featureBw" [data]="bandwidthLineChart" [config]="bwChartConfig"></sfng-netquery-line-chart>
-
-    <span *ngIf="!featureBw"
-      class="!text-xxs !font-light !text-tertiary !text-opacity-50 w-full text-center !leading-3">
-      Available in Portmaster Plus
-    </span>
+  <app-dashboard-widget class="flex-grow" id="bwvis-line" label="Recent Bandwidth Usage">
+    <sfng-netquery-line-chart class="block w-full" style="height: 300px" [data]="bandwidthLineChart" [config]="bwChartConfig"></sfng-netquery-line-chart>
   </app-dashboard-widget>
 
-  <app-dashboard-widget class="flex-grow relative" id="news" label="News">
-
-    <div class="flex flex-col items-center justify-center w-full h-full gap-2 font-light" *ngIf="!news">
-      <span>News is only available if intel data updates are enabled</span>
-      <button [routerLink]="['/settings']" [queryParams]="{setting: 'core/automaticIntelUpdates'}">Open Settings</button>
+  <app-dashboard-widget id="news" label="Community routing">
+    <div class="flex flex-col gap-4 text-sm text-secondary">
+      <h2 class="text-lg text-primary">Your network, your choice</h2>
+      <p>Local history and bandwidth visibility work without an account.</p>
+      <p>Route selected applications through a local Tor SOCKS proxy or your own WireGuard interface.</p>
+      <a routerLink="/spn" class="underline text-blue">Set up Tor or WireGuard</a>
+      <p>Configure routing for each application. This dashboard does not verify tunnel connectivity.</p>
+      <p>DNS uses your configured resolver separately. Tor routing blocks UDP and does not provide Tor Browser protections.</p>
+      <a routerLink="/support" class="underline text-blue">Documentation and help</a>
     </div>
-
-    <div class="flex flex-col items-center justify-center w-full h-full gap-2 font-light" *ngIf="news === 'pending'">
-      <span>Just a second, we're loading the latest news...</span>
-    </div>
-
-    <ng-container *ngIf="!!news && news !== 'pending'">
-      <sfng-tab-group linkRouter="false" [customHeader]="true" #carousel>
-        <sfng-tab *ngFor="let card of news?.cards" [id]="card.title" [title]="card.title">
-          <section *sfngTabContent class="flex flex-col gap-2 p-2 h-full" (mouseenter)="onCarouselTabHover(card)" (mouseleave)="onCarouselTabHover(null)">
-            <a [attr.href]="card.url">
-              <h1 class="flex flex-row gap-2 items-center w-full ml-2 mr-2">
-                {{ card.title }}
-                <svg *ngIf="card.url" role="img" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" class="text-white text-opacity-50 w-3 h-3">
-                  <path fill="currentColor" d="M352 0c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9L370.7 96 201.4 265.4c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L416 141.3l41.4 41.4c9.2 9.2 22.9 11.9 34.9 6.9s19.8-16.6 19.8-29.6V32c0-17.7-14.3-32-32-32H352zM80 32C35.8 32 0 67.8 0 112V432c0 44.2 35.8 80 80 80H400c44.2 0 80-35.8 80-80V320c0-17.7-14.3-32-32-32s-32 14.3-32 32V432c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16V112c0-8.8 7.2-16 16-16H192c17.7 0 32-14.3 32-32s-14.3-32-32-32H80z"></path>
-                </svg>
-              </h1>
-            </a>
-
-            <markdown class="flex-grow" *ngIf="card.body" emoji [data]="card.body"></markdown>
-
-            <div *ngIf="card.progress as progress" class="ml-2 mr-2">
-              <div class="overflow-hidden rounded border bg-gray-400 border-gray-100 h-5 w-full relative">
-                <div class="h-full" [style]="progress.style" [style.width.%]="progress.percent"></div>
-                <div class="absolute top-0.5 bottom-0 left-0 right-0 flex flex-row justify-center items-center text-xxs text-background">
-                  <span>{{ progress.percent }}%</span>
-                </div>
-              </div>
-            </div>
-
-            <markdown *ngIf="card.footer" emoji [data]="card.footer" class="!text-secondary"></markdown>
-
-          </section>
-        </sfng-tab>
-      </sfng-tab-group>
-
-      <div class="absolute bottom-2 left-0 right-0 flex flex-row items-center justify-center gap-2">
-        <span *ngFor="let dot of carousel.tabs; let index=index"
-          class="block w-2 h-2 transition-all duration-150 ease-in-out bg-opacity-50 rounded-full cursor-pointer bg-background"
-          [class.bg-blue]="carousel.activeTabIndex === index" (click)="carousel.activateTab(index)"></span>
-      </div>
-    </ng-container>
-
   </app-dashboard-widget>
 </div>

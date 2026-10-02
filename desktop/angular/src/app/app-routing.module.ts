@@ -6,7 +6,6 @@ import { MonitorPageComponent } from './pages/monitor';
 import { SettingsComponent } from './pages/settings/settings';
 import { SpnPageComponent } from './pages/spn';
 import { SupportPageComponent } from './pages/support';
-import { SupportFormComponent } from './pages/support/form';
 
 const routes: Routes = [
   {
@@ -45,7 +44,8 @@ const routes: Routes = [
   },
   {
     path: 'support/:id',
-    component: SupportFormComponent,
+    redirectTo: 'support',
+    pathMatch: 'full',
   },
   {
     path: 'spn',

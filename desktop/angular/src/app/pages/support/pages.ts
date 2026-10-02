@@ -33,133 +33,22 @@ export interface ExternalLink {
 
 export type SupportType = SupportPage | ExternalLink;
 
+const repository = 'https://git.frxst.org/bytefrxst/portmaster';
+const doc = (file: string) => repository + '/src/branch/main/' + file;
 export const supportTypes: PageSections[] = [
-  {
-    title: "Resources",
-    choices: [
-      {
-        type: 'link',
-        title: '📘 Portmaster Wiki & FAQ',
-        url: 'https://wiki.safing.io/?source=Portmaster',
-        shortHelp: 'Search the Portmaster knowledge base and FAQ.',
-      },
-      {
-        type: 'link',
-        title: '🔖 Settings Handbook',
-        url: 'https://docs.safing.io/portmaster/settings?source=Portmaster',
-        shortHelp: 'A reference document of all Portmaster settings.'
-      },
-      {
-        type: 'link',
-        title: '📑 Safing Blog',
-        url: 'https://safing.io/blog?source=Portmaster',
-        shortHelp: 'Read our blog posts and announcements.',
-      }
-    ]
-  },
-  {
-    title: "Communities & Support",
-    style: 'small',
-    choices: [
-      {
-        type: 'link',
-        title: 'Join us on Discord',
-        url: 'https://safing.io/discord',
-        shortHelp: 'Get help from the community and our AI bot on Discord.'
-      },
-      {
-        type: 'link',
-        title: 'Follow us on Mastodon',
-        url: 'https://fosstodon.org/@safing',
-        shortHelp: 'Get updates and privacy jokes on Mastodon.'
-      },
-      {
-        type: 'link',
-        title: 'Follow us on Twitter',
-        url: 'https://twitter.com/SafingIO',
-        shortHelp: 'Get updates and privacy jokes on Twitter.'
-      },
-      {
-        type: 'link',
-        title: 'Safing Support via Email',
-        url: 'mailto:support@safing.io',
-        shortHelp: 'As a subscriber, reach out to the Safing team directly.'
-      }
-    ]
-  },
-  {
-    title: "Make a Report",
-    style: 'small',
-    choices: [
-      {
-        id: "report-bug",
-        title: "🐞 Report a Bug",
-        shortHelp: "Found a bug? Report your discovery and make the Portmaster better for everyone.",
-        repoHelp: "Where did the bug take place?",
-        sections: [
-          {
-            title: "What happened?",
-            help: "Describe what happened in detail"
-          },
-          {
-            title: "What did you expect to happen?",
-            help: "Describe what you expected to happen instead"
-          },
-          {
-            title: "How did you reproduce it?",
-            help: "Describe how to reproduce the issue"
-          },
-          {
-            title: "Additional information",
-            help: "Provide extra details if needed"
-          },
-        ],
-        includeDebugData: true,
-        privateTicket: true,
-        ghIssuePreset: "report-bug.md",
-        repositories: []
-      },
-      {
-        id: "give-feedback",
-        title: "💡 Suggest an Improvement",
-        shortHelp: "Suggest an enhancement or a new feature for Portmaster.",
-        repoHelp: "What would you would like to improve?",
-        sections: [
-          {
-            title: "What would you like to add or change?",
-          },
-          {
-            title: "Why do you and others need this?"
-          }
-        ],
-        includeDebugData: false,
-        privateTicket: true,
-        ghIssuePreset: "suggest-feature.md",
-        repositories: []
-      },
-      {
-        id: "compatibility-report",
-        title: "📝 Make a Compatibility Report",
-        shortHelp: "Report Portmaster in/compatibility with Linux Distros, VPN Clients or general Software.",
-        sections: [
-          {
-            title: "What worked?",
-            help: "Describe what worked"
-          },
-          {
-            title: "What did not work?",
-            help: "Describe what did not work in detail"
-          },
-          {
-            title: "Additional information",
-            help: "Provide extra details if needed"
-          },
-        ],
-        includeDebugData: true,
-        privateTicket: true,
-        ghIssuePreset: "report-compatibility.md",
-        repositories: [] // not needed with the default being "portmaster"
-      },
-    ],
-  }
-]
+  { title: 'Resources', choices: [
+    { type: 'link', title: 'Getting started & FAQ', url: doc('docs/community/getting-started.md'), shortHelp: 'Installation, local features, and common questions.' },
+    { type: 'link', title: 'Routing & settings guide', url: doc('docs/community/routing.md'), shortHelp: 'Configure applications, Tor, WireGuard, and DNS.' },
+    { type: 'link', title: 'Source & release notes', url: repository, shortHelp: 'Browse your community fork and its development history.' },
+  ] },
+  { title: 'Contribute & get support', style: 'small', choices: [
+    { type: 'link', title: 'Issue tracker', url: repository + '/issues', shortHelp: 'Search existing reports and discuss reproducible problems.' },
+    { type: 'link', title: 'Contribution guide', url: doc('CONTRIBUTING.md'), shortHelp: 'Build, test, review, and contribute securely.' },
+    { type: 'link', title: 'Security & vulnerability reporting', url: doc('SECURITY.md'), shortHelp: 'Read the reporting policy before sharing sensitive details.' },
+  ] },
+  { title: 'Make a report', style: 'small', choices: [
+    { type: 'link', title: 'Report a bug', url: repository + '/issues/new?template=bug_report.md', shortHelp: 'Include your version, expected behavior, and reproduction steps. Review logs before uploading.' },
+    { type: 'link', title: 'Suggest an improvement', url: repository + '/issues/new?template=feature_request.md', shortHelp: 'Describe the problem, proposed behavior, and privacy impact.' },
+    { type: 'link', title: 'Compatibility report', url: repository + '/issues/new?template=compatibility.md', shortHelp: 'Report operating system, VPN, or application compatibility.' },
+  ] },
+];
