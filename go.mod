@@ -64,7 +64,7 @@ require (
 	github.com/umahmood/haversine v0.0.0-20151105152445-808ab04add26
 	github.com/varlink/go v0.4.0
 	github.com/vincent-petithory/dataurl v1.0.0
-	go.etcd.io/bbolt v1.4.3
+	go.etcd.io/bbolt v1.5.0
 	golang.org/x/exp v0.0.0-20260813180055-c1d0aacb2297
 	golang.org/x/image v0.33.0
 	golang.org/x/net v0.58.0
