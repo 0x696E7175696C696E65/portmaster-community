@@ -18,7 +18,7 @@ require (
 	github.com/coreos/go-iptables v0.8.0
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc
 	github.com/dgraph-io/badger v1.6.2
-	github.com/florianl/go-conntrack v0.4.0
+	github.com/florianl/go-conntrack v0.7.0
 	github.com/florianl/go-nfqueue v1.3.2
 	github.com/fogleman/gg v1.3.0
 	github.com/ghodss/yaml v1.0.0
