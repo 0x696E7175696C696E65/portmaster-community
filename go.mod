@@ -42,7 +42,7 @@ require (
 	github.com/miekg/dns v1.1.72
 	github.com/mitchellh/copystructure v1.2.0
 	github.com/mitchellh/go-server-timing v1.0.1
-	github.com/mr-tron/base58 v1.2.0
+	github.com/mr-tron/base58 v1.3.0
 	github.com/oschwald/maxminddb-golang v1.13.1
 	github.com/r3labs/diff/v3 v3.0.2
 	github.com/rot256/pblind v0.0.0-20250826112722-8244c3966ed3
