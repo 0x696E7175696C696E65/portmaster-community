@@ -22,47 +22,7 @@
     -->
     </div>
 
-    <div class="flex flex-row gap-8">
-      <div class="flex flex-col text-xs leading-4">
-        <span class="font-light text-secondary">
-          Your current plan is
-          <span class="font-normal text-primary">
-            {{ profile?.current_plan?.name || 'Portmaster Free' }}
-          </span>
-        </span>
-
-        <span class="font-light text-secondary" *ngIf="!profile?.subscription?.next_billing_date">
-          and ends
-          <ng-container *ngIf="profile?.subscription?.ends_at; else: endsNever">
-            in
-            <span class="font-normal text-primary">
-              {{ profile?.subscription?.ends_at! | timeAgo }}
-            </span>
-          </ng-container>
-          <ng-template #endsNever>
-            never
-          </ng-template>
-        </span>
-        <span class="font-light text-secondary" *ngIf="!!profile?.subscription?.next_billing_date">
-          and auto-renews in <span class="font-normal text-primary">
-            {{ profile?.subscription?.next_billing_date! | timeAgo }}
-          </span>
-        </span>
-      </div>
-
-      <ng-container *ngIf="!!profile && profile.state !== ''; else: loginButton">
-        <button (click)="openAccountDetails()"
-          class="text-sm font-normal text-white cursor-pointer btn bg-blue bg-opacity-80 hover:bg-opacity-100 hover:bg-blue">
-          Account Details
-        </button>
-      </ng-container>
-      <ng-template #loginButton>
-        <button (click)="openAccountDetails()"
-          class="text-sm font-normal text-white cursor-pointer btn bg-blue bg-opacity-80 hover:bg-opacity-100 hover:bg-blue">
-          Login / Subscribe
-        </button>
-      </ng-template>
-    </div>
+    <div class="text-sm text-secondary">Community edition · No subscription required</div>
   </header>
 
 

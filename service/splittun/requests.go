@@ -41,7 +41,17 @@ var (
 func AwaitRequest(connInfo *network.Connection, bindInterface string) (*network.SplitTunContext, error) {
 
 	var binding proxy.LocalBinding
-	if bindInterface == "" {
+	torEndpoint, isTor, err := proxy.ParseTorEndpoint(bindInterface)
+	if err != nil {
+		return nil, err
+	}
+	if isTor {
+		if connInfo.IPProtocol != packet.TCP {
+			return nil, fmt.Errorf("Tor supports TCP only; refusing direct fallback")
+		}
+		binding.SOCKSProxy = torEndpoint
+		binding.Interface = "Tor"
+	} else if bindInterface == "" {
 		// empty - is the default and means to try detecting the "default" (non-VPN) interface automatically.
 		// This is not reliable, but can be convenient for users who don't want to configure an interface.
 		ifaces, err := netenv.GetBestPhysicalDefaultInterfaces()

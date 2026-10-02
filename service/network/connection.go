@@ -24,7 +24,6 @@ import (
 	_ "github.com/safing/portmaster/service/process/tags"
 	"github.com/safing/portmaster/service/resolver"
 	"github.com/safing/portmaster/spn/access"
-	"github.com/safing/portmaster/spn/access/account"
 	"github.com/safing/portmaster/spn/navigator"
 )
 
@@ -667,13 +666,7 @@ func (conn *Connection) SetLocalIP(ip net.IP) {
 // used and sets the flags accordingly.
 // The caller must hold a lock on the connection.
 func (conn *Connection) UpdateFeatures() error {
-	// Get user.
-	user, err := access.GetUser()
-	if err != nil && !errors.Is(err, access.ErrNotLoggedIn) {
-		return err
-	}
-	// Caution: user may be nil!
-
+	// Local features do not depend on an account or a remote service.
 	// Check if history may be used and if it is enabled for this application.
 	conn.HistoryEnabled = false
 	switch {
@@ -683,7 +676,7 @@ func (conn *Connection) UpdateFeatures() error {
 	case conn.Entity.IPScope.IsLocalhost():
 		// Do not record localhost-only connections, as they are very low interest in the history.
 		// TODO: Should we create a setting for this?
-	case user.MayUse(account.FeatureHistory):
+	default:
 		// Check if history may be used and is enabled.
 		lProfile := conn.Process().Profile()
 		if lProfile != nil {
@@ -692,7 +685,7 @@ func (conn *Connection) UpdateFeatures() error {
 	}
 
 	// Check if bandwidth visibility may be used.
-	conn.BandwidthEnabled = user.MayUse(account.FeatureBWVis)
+	conn.BandwidthEnabled = true
 
 	return nil
 }

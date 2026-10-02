@@ -1,6 +1,7 @@
 package captain
 
 import (
+	"errors"
 	"sync"
 
 	"github.com/safing/portmaster/base/config"
@@ -58,11 +59,17 @@ var (
 func prepConfig() error {
 	// Register spn module setting.
 	err := config.Register(&config.Option{
-		Name:         "SPN Module",
+		Name:         "Legacy SPN (disabled)",
 		Key:          CfgOptionEnableSPNKey,
 		Description:  "Start the Safing Privacy Network module. If turned off, the SPN is fully disabled on this device.",
 		OptType:      config.OptTypeBool,
 		DefaultValue: false,
+		ValidationFunc: func(value interface{}) error {
+			if enabled, ok := value.(bool); ok && enabled && conf.Integrated() {
+				return errors.New("paid SPN is disabled; configure Tor or WireGuard in Split Tunnel settings")
+			}
+			return nil
+		},
 		Annotations: config.Annotations{
 			config.DisplayOrderAnnotation: cfgOptionEnableSPNOrder,
 			config.CategoryAnnotation:     "General",

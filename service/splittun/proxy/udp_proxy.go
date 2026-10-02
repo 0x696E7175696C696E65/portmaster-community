@@ -237,6 +237,11 @@ func (p *UDPProxy) handlePacket(clientAddr *net.UDPAddr, data []byte) {
 		return
 	}
 
+	if binding != nil && binding.SOCKSProxy != "" {
+		p.log.Warn(p.logPrefix + "Tor does not support UDP; dropping packet")
+		return
+	}
+
 	// Register the session immediately so FindProxiedEgressConnection can
 	// locate it before the upstream dial completes.
 	sessCtx, cancel := context.WithCancel(p.shutdownCtx)

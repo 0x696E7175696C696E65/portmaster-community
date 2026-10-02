@@ -13,6 +13,9 @@ import (
 // LocalBinding carries the local-side binding parameters for an outbound proxy
 // connection.  Both fields are optional and may be set independently.
 type LocalBinding struct {
+	// SOCKSProxy selects a local Tor SOCKS5 endpoint instead of a direct dial.
+	SOCKSProxy string
+
 	// IP is the local source address to bind the outgoing socket to.
 	// If nil, the OS selects an appropriate source address.
 	IP net.IP

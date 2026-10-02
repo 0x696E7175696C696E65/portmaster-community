@@ -146,26 +146,6 @@ export class SPNService {
    * Watches the user profile. It will emit null if there is no profile available yet.
    */
   watchProfile(): Observable<UserProfile | null> {
-    let hasSent = false;
-    return this.portapi.watch<UserProfile>('core:spn/account/user', { ignoreDelete: true }, { forwardDone: true })
-      .pipe(
-        filter(result => {
-          if ('type' in result && result.type === 'done') {
-            if (hasSent) {
-              return false;
-            }
-          }
-
-          return true
-        }),
-        map(result => {
-          hasSent = true;
-          if ('type' in result) {
-            return null;
-          }
-
-          return result;
-        })
-      );
+    return this.userProfile();
   }
 }

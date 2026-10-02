@@ -8,18 +8,10 @@ var (
 	DefaultBinaryIndexName = "Portmaster Binaries"
 	DefaultIntelIndexName  = "Portmaster Intel"
 
-	DefaultStableBinaryIndexURLs = []string{
-		"https://updates.safing.io/stable.v3.json",
-	}
-	DefaultBetaBinaryIndexURLs = []string{
-		"https://updates.safing.io/beta.v3.json",
-	}
-	DefaultStagingBinaryIndexURLs = []string{
-		"https://updates.safing.io/staging.v3.json",
-	}
-	DefaultSupportBinaryIndexURLs = []string{
-		"https://updates.safing.io/support.v3.json",
-	}
+	DefaultStableBinaryIndexURLs  = []string{}
+	DefaultBetaBinaryIndexURLs    = []string{}
+	DefaultStagingBinaryIndexURLs = []string{}
+	DefaultSupportBinaryIndexURLs = []string{}
 
 	DefaultIntelIndexURLs = []string{
 		"https://updates.safing.io/intel.v3.json",

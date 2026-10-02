@@ -71,6 +71,10 @@ func prep() error {
 }
 
 func start() error {
+	if conf.Integrated() {
+		return config.SetConfigOption("spn/enable", false)
+	}
+
 	// Initialize zones.
 	if err := InitializeZones(); err != nil {
 		return err
@@ -131,6 +135,10 @@ func stop() error {
 
 // UpdateAccount updates the user account and fetches new tokens, if needed.
 func UpdateAccount(_ *mgr.WorkerCtx) error {
+	if conf.Integrated() {
+		return nil
+	}
+
 	// Schedule next call - this will change if other conditions are met bellow.
 	module.updateAccountWorkerMgr.Delay(24 * time.Hour)
 

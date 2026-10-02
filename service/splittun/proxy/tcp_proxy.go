@@ -227,7 +227,7 @@ func (p *TCPProxy) handleConn(clientConn net.Conn) {
 	if binding != nil {
 		applyBindToDevice(&dialer, binding.Interface)
 	}
-	upstreamConn, err := dialer.DialContext(p.shutdownCtx, p.network, destAddr)
+	upstreamConn, err := dialUpstream(sessCtx, &dialer, p.network, destAddr, binding)
 	if err != nil {
 		if p.shutdownCtx.Err() != nil {
 			// Proxy is shutting down; this is expected, not an error.

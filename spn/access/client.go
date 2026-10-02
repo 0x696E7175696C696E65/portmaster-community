@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/safing/portmaster/spn/conf"
 	"net/http"
 	"sync"
 	"time"
@@ -203,6 +204,9 @@ func updateUserWithFailedRequest(statusCode int, disableSubscription bool) {
 
 // Login logs the user into the SPN account with the given username and password.
 func Login(username, password string) (user *UserRecord, code int, err error) {
+	if conf.Integrated() {
+		return nil, http.StatusForbidden, ErrMayNotUseSPN
+	}
 	clientRequestLock.Lock()
 	defer clientRequestLock.Unlock()
 

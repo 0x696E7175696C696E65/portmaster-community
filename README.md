@@ -1,107 +1,65 @@
-# Get Peace of Mind <br> with [Easy Privacy](https://safing.io/)
+# Portmaster Community — bytefrxst fork
 
-Portmaster is a free and open-source application firewall that does the heavy lifting for you.
-Restore privacy and take back control over all your computer's network activity.
+An independent open-source fork of [Safing Portmaster](https://github.com/safing/portmaster), with account-free local features and user-controlled privacy routing.
 
-With great defaults your privacy improves without any effort. And if you want to configure and control everything down to the last detail - Portmaster has you covered too. Developed in the EU 🇪🇺, Austria.
+Repository: https://git.frxst.org/bytefrxst/portmaster
 
-__[Download for Free](https://safing.io/download/)__
+## Implemented changes
 
-__[About Us](https://safing.io/about/)__
+- Local network history and per-app bandwidth tracking work without a Safing account or subscription. History still follows your global/per-app recording preferences and retention settings.
+- The desktop reads a local Community capability profile. Dashboard subscription controls, login forms, and the SPN sales page are replaced with community information and routing instructions.
+- The integrated desktop client disables paid SPN startup, rejects enabling it, removes login/logout API endpoints, and stops periodic account/token refresh. The local capability profile does not grant hosted SPN or Safing priority support.
+- Tor TCP routing uses a local SOCKS5 daemon, with IPv4/IPv6 loopback endpoint validation and no direct fallback on proxy failure. Tor-selected UDP is rejected.
+- WireGuard routing reuses interface-based TCP/UDP routing. Linux binds the socket to the selected device; Windows additionally pins the outgoing interface using IP_UNICAST_IF/IPV6_UNICAST_IF.
+- Selected traffic is blocked if the routing module is unavailable. Missing selected interfaces and failed Tor connections fail closed for new routed connections.
+- Safing binary update feeds are removed and automatic software updates default to off, preventing default feed downloads from replacing this fork. Intelligence-data updates remain upstream.
 
-![Portmaster User Interface](https://safing.io/assets/img/page-specific/landing/portmaster-thumbnail.png?)
+This is a development source fork. It has no release installer yet. Legacy SPN internals remain for upstream compatibility and standalone hub tooling; they are disabled in the integrated client. This initial version does not remove every legacy SPN configuration label or Safing asset.
 
-_seen on:_  
+## Tor setup
 
-[<img src="https://safing.io/assets/img/external/heise_online.svg" height="35">](https://www.heise.de/tests/Datenschutz-Firewall-Portmaster-im-Test-9611687.html)
-&nbsp;&nbsp;&nbsp;
-[![ghacks.net](https://safing.io/assets/img/external/ghacks.png)](https://www.ghacks.net/2022/11/08/portmaster-1-0-released-open-source-application-firewall/)
-&nbsp;&nbsp;&nbsp;
-[![Techlore](https://safing.io/assets/img/external/techlore.png)](https://www.youtube.com/watch?v=E8cTRhGtmcM)
-&nbsp;&nbsp;&nbsp;
-[![Lifehacker](https://safing.io/assets/img/external/logos/lifehacker.webp)](https://lifehacker.com/the-lesser-known-apps-everyone-should-install-on-a-new-1850223434)
+1. Install and run a local Tor daemon with a SOCKS listener on 127.0.0.1:9050. Another port is supported.
+2. Enable **Split Tunnel Module** globally.
+3. For the selected app, enable **Use Split Tunnel** and set **Network Interface** to `tor`. Use `tor://127.0.0.1:9150` or `tor://[::1]:9050` for another listener.
+4. Keep routing disabled for the Tor daemon itself to avoid routing its own relay connections back through Tor.
+5. Leave the app's Split Tunnel rules empty to route all otherwise allowed TCP traffic. A deny rule in this routing policy deliberately excludes matching traffic from the tunnel; firewall blocking rules are separate.
 
-## [Features](https://safing.io/features/)
+Tor does not support SOCKS UDP association, so UDP traffic selected for Tor is blocked. DNS resolution still uses Portmaster's configured resolver independently of Tor. This does not provide .onion hostname resolution, per-app circuit isolation, or Tor Browser fingerprint protection. See the [Tor SOCKS specification](https://spec.torproject.org/socks-extensions.html).
 
-1. Monitor All Network Activity
-2. Full Control: Block Anything
-3. Automatically Block Trackers & Malware
-4. Set Global & Per‑App Settings
-5. Secure DNS (Doh/DoT)
-6. Record and Search Network Activity ([$](https://safing.io/pricing/))
-7. Per-App Bandwidth Usage ([$](https://safing.io/pricing/))
-8. [SPN, our Next-Gen Privacy Network](https://safing.io/spn/) ([$$](https://safing.io/pricing/))
+## WireGuard setup
 
-# Technical Introduction
+1. Install WireGuard and configure/start your own tunnel using your chosen peer, keys, routes, and AllowedIPs.
+2. Enable **Split Tunnel Module**, then **Use Split Tunnel** for the selected app.
+3. Set **Network Interface** to the running tunnel interface name (for example `wg0`) or its assigned local IP.
+4. Exclude the WireGuard process from app routing. Ensure the tunnel supports every destination and IP family you intend to route; an absent family is rejected.
+5. Configure DNS separately. Portmaster does not create WireGuard keys, provision peers, or operate a VPN service.
 
-Portmaster is a privacy suite for your Windows and Linux desktop.
+See [WireGuard's quick start](https://www.wireguard.com/quickstart/). Existing connections, DNS, localhost traffic, inbound traffic, unsupported protocols, and deliberately excluded traffic are outside the new-connection routing policy. The full desktop/kernel path still needs live tunnel and disconnect testing before a production release.
 
-### Base Technology
+## Build and validation
 
-- Portmaster integrates into network stack using nfqueue on Linux and a kernel driver (WFP) on Windows.
-- Packets are intercepted at the raw packet level - every packet is seen and can be stopped.
-- Ownership of connections is found using eBPF and `/proc` on Linux and a kernel driver and the IP Helper API (`iphlpapi.dll`) on Windows.
-- Most settings can be defined per app, which can be matched in different ways.
-- Support for special processes with weird or concealed paths/actors:
-  - Snap, AppImage and Script support on Linux
-  - Windows Store apps and svchost.exe system services support on Windows
-- Everything is 100% local on your device. (except the SPN, naturally)
-  - Updates are fully signed and downloaded automatically.
-  - Intelligence data (block lists, geoip) is downloaded and applied automatically.
-- The Portmaster Core Service runs as a system service, the UI elements (App, Notifier) run in user context.
-- The main UI still uses electron as a wrapper :/ - but this will change in the future. You can also open the UI in the browser
+The upstream source currently requires Go 1.26.3. Build the Windows core with:
 
-### Feature: Secure DNS
+```powershell
+go build -o portmaster-core.exe ./cmds/portmaster-core
+go test -short ./service/splittun/proxy ./spn/access ./spn/captain ./service/network ./service/firewall ./service/profile ./service/splittun ./service/configure ./service/core
+```
 
-- Portmaster intercepts "astray" DNS queries and reroutes them to itself for seamless integration.
-- DNS queries are resolved by the default or configured DoT/DoH resolvers.
-- Full support for split horizon and horizon validation to defend against rebinding attacks.
+The short flag skips upstream tests that require a live paid SPN account. Added tests cover account-free capabilities, Tor endpoint validation, SOCKS negotiation and data forwarding, UDP refusal, failed Tor connections without direct fallback, and unavailable interface binding.
 
-### Feature: Privacy Filter
+For the Angular desktop:
 
-- Define allowed network scopes: Localhost, LAN, Internet, P2P, Inbound.
-- Easy rules based on Internet entities: Domain, IP, Country and more.
-- Filter Lists block common malware, ad, tracker domains etc.
+```powershell
+cd desktop/angular
+npm ci --ignore-scripts
+npm run build-libs:dev
+npx ng build --configuration development
+```
 
-### Feature: Network History ($)
+Building the core does not install its kernel driver or system service. See [the preserved upstream README](README.upstream.md) and platform packaging sources for those requirements.
 
-- Record connections and their details in a local database and search all of it later
-- Auto-delete old history or delete on demand
+## Provenance and license
 
-### Feature: Bandwidth Visibility ($)
+Based on Safing's development commit 13a86a43cc6cee592395fcddc8387178f290f144, with upstream Git history retained. Fork changes are dated 2026-10-02. The Go module path remains github.com/safing/portmaster to keep internal imports compatible.
 
-- Monitor bandwidth usage per connection and app
-
-### Feature: SPN - Safing Privacy Network ($$)
-
-- A Privacy Network aimed at use cases "between" VPN and Tor.
-- Uses onion encryption over multiple hops just like Tor.
-- Routes are chosen to cover most distance within the network to increase privacy.
-- Exits are chosen near the destination server. This automatically geo-unblocks in many cases.
-- Exclude apps and domains/entities from using SPN.
-- Change routing algorithm and focus per app.
-- Nodes are hosted by Safing (company behind Portmaster) and the community.
-- Speeds are pretty decent (>100MBit/s).
-- Further Reading: [SPN Whitepaper](https://safing.io/files/whitepaper/Gate17.pdf)
-
-## Documentation
-
-All details and guides in the dedicated [wiki](https://wiki.safing.io/)
-
-- [Getting Started](https://wiki.safing.io/en/Portmaster/App)
-- Install
-  - [on Windows](https://wiki.safing.io/en/Portmaster/Install/Windows)
-  - [on Linux](https://wiki.safing.io/en/Portmaster/Install/Linux)
-- [Contribute](https://wiki.safing.io/en/Contribute)
-- [VPN Compatibility](https://wiki.safing.io/en/Portmaster/App/Compatibility#vpn-compatibly)
-- [Software Compatibility](https://wiki.safing.io/en/Portmaster/App/Compatibility)
-- [Architecture](https://wiki.safing.io/en/Portmaster/Architecture)
-- [Settings Handbook](https://docs.safing.io/portmaster/settings)
-- [Portmaster Developer API](https://docs.safing.io/portmaster/api)
-
-# Build Portmaster Yourself (WIP)
-
-1. [Install Earthly CLI](https://earthly.dev/get-earthly)
-2. [Install Docker Engine](https://docs.docker.com/engine/install/)
-3. Run `earthly +release`
-4. Find artifacts in `./dist`
+The upstream GPL-3.0 license, copyright notices, and bundled asset licenses are preserved. This fork is not an official Safing release. See [LICENSE](LICENSE).

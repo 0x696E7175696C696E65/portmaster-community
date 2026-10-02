@@ -8,40 +8,9 @@ import (
 	"github.com/safing/portmaster/base/api"
 	"github.com/safing/portmaster/base/database/record"
 	"github.com/safing/portmaster/base/log"
-	"github.com/safing/portmaster/spn/access/account"
 )
 
 func registerAPIEndpoints() error {
-	if err := api.RegisterEndpoint(api.Endpoint{
-		Path:        `spn/account/login`,
-		Write:       api.PermitAdmin,
-		WriteMethod: http.MethodPost,
-		HandlerFunc: handleLogin,
-		Name:        "SPN Login",
-		Description: "Log into your SPN account.",
-	}); err != nil {
-		return err
-	}
-
-	if err := api.RegisterEndpoint(api.Endpoint{
-		Path:        `spn/account/logout`,
-		Write:       api.PermitAdmin,
-		WriteMethod: http.MethodDelete,
-		ActionFunc:  handleLogout,
-		Name:        "SPN Logout",
-		Description: "Logout from your SPN account.",
-		Parameters: []api.Parameter{
-			{
-				Method:      http.MethodDelete,
-				Field:       "purge",
-				Value:       "",
-				Description: "If set, account data is purged. Otherwise, the username and device ID are kept in order to log into the same device when logging in with the same user again.",
-			},
-		},
-	}); err != nil {
-		return err
-	}
-
 	if err := api.RegisterEndpoint(api.Endpoint{
 		Path:        `spn/account/user/profile`,
 		Read:        api.PermitUser,
@@ -147,23 +116,6 @@ func handleLogout(ar *api.Request) (msg string, err error) {
 	}
 }
 
-func handleGetUserProfile(ar *api.Request) (r record.Record, err error) {
-	// Check if we are already authenticated.
-	user, err := GetUser()
-	if err != nil || user.State == account.UserStateNone {
-		return nil, api.ErrorWithStatus(
-			ErrNotLoggedIn,
-			account.StatusInvalidAuth,
-		)
-	}
-
-	// Should we refresh the user profile?
-	if ar.URL.Query().Get("refresh") != "" {
-		user, _, err = UpdateUser()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return user, nil
+func handleGetUserProfile(_ *api.Request) (r record.Record, err error) {
+	return communityProfile(), nil
 }

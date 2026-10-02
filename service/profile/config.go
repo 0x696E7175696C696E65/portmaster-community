@@ -845,7 +845,7 @@ By default, the Portmaster tries to choose the node closest to the destination a
 
 When you enable this and the Network Interface option is empty, Portmaster will try to route your traffic through the default physical network interface.
 
-Important: SPN takes precedence over Split Tunnel. To use Split Tunnel with SPN, configure SPN on a per-app basis or define exceptions that allow Split Tunnel to take effect.`,
+Selected routing fails closed when the routing module or selected interface is unavailable.`,
 		OptType:      config.OptTypeBool,
 		DefaultValue: false,
 		Annotations: config.Annotations{
@@ -864,16 +864,20 @@ Important: SPN takes precedence over Split Tunnel. To use Split Tunnel with SPN,
 	err = config.Register(&config.Option{
 		Name: "Network Interface",
 		Key:  CfgOptionSplitTunInterfaceKey,
-		Description: `Specify the network interface to route Split Tunnel traffic through. You can define it by:
+		Description: `Choose Tor or a network interface (including a running WireGuard tunnel). Use "tor" for 127.0.0.1:9050, or "tor://127.0.0.1:9150" for another local Tor SOCKS port. Tor supports TCP only; UDP is blocked. Keep the Tor and WireGuard processes themselves excluded from routing. DNS uses the separately configured Portmaster resolver.
+
+For WireGuard, start the tunnel externally and supply its interface name or local tunnel IP. Configure routes and AllowedIPs in your WireGuard client.
+
+Other interfaces can be specified by:
 - Interface name: "Ethernet", "Wi-Fi", "wlan0", etc.
 - Interface IP address: "192.168.1.1", "10.0.0.1", etc.
 - Interface MAC address: "00:1A:2B:3C:4D:5E", "01:23:45:67:89:AB", etc.
 
 Leave empty to let Portmaster detect the physical network interface and ignore virtual VPN interfaces. This helps bypass VPN tunnels. For better reliability, you can specify the interface manually if empty value does not work as expected.
 
-Important: The connection will be dropped if the network interface cannot be detected or becomes unavailable.
+The connection will be dropped if the selected interface or Tor proxy is unavailable.
 
-Important: SPN takes precedence over Split Tunnel. To use Split Tunnel with SPN, configure SPN on a per-app basis or define exceptions that allow Split Tunnel to take effect.`,
+Selected routing fails closed when the routing module or selected interface is unavailable.`,
 		Sensitive:    true,
 		OptType:      config.OptTypeString,
 		DefaultValue: "",
@@ -906,7 +910,7 @@ Important: SPN takes precedence over Split Tunnel. To use Split Tunnel with SPN,
 		Key:  CfgOptionSplitTunUsagePolicyKey,
 		Description: `Customize rules which connections should or should not be routed through the Split Tunnel. Only active if "Use Split Tunnel" is enabled.
 		
-Important: SPN takes precedence over Split Tunnel. To use Split Tunnel with SPN, configure SPN on a per-app basis or define exceptions that allow Split Tunnel to take effect.`,
+Selected routing fails closed when the routing module or selected interface is unavailable.`,
 		Help:         rulesHelp,
 		Sensitive:    true,
 		OptType:      config.OptTypeStringArray,

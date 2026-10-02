@@ -24,20 +24,10 @@ type Package struct {
 }
 
 var (
-	infoURL     = "https://safing.io/pricing/"
+	infoURL     = "https://git.frxst.org/bytefrxst/portmaster"
 	packageFree = &Package{
-		Name:     "Free",
+		Name:     "Community",
 		HexColor: "#ffffff",
-		InfoURL:  infoURL,
-	}
-	packagePlus = &Package{
-		Name:     "Plus",
-		HexColor: "#2fcfae",
-		InfoURL:  infoURL,
-	}
-	packagePro = &Package{
-		Name:     "Pro",
-		HexColor: "#029ad0",
 		InfoURL:  infoURL,
 	}
 	features = []Feature{
@@ -67,10 +57,10 @@ var (
 		{
 			Name:              "Network History",
 			ID:                string(account.FeatureHistory),
-			RequiredFeatureID: account.FeatureHistory,
+			RequiredFeatureID: "",
 			ConfigKey:         "history/enable",
 			ConfigScope:       "history/",
-			InPackage:         packagePlus,
+			InPackage:         packageFree,
 			icon: `
 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
   <path stroke-linecap="round" stroke-linejoin="round"
@@ -81,8 +71,8 @@ var (
 		{
 			Name:              "Bandwidth Visibility",
 			ID:                string(account.FeatureBWVis),
-			RequiredFeatureID: account.FeatureBWVis,
-			InPackage:         packagePlus,
+			RequiredFeatureID: "",
+			InPackage:         packageFree,
 			Beta:              true,
 			icon: `
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -92,7 +82,7 @@ var (
 			`,
 		},
 		{
-			Name:        "Split Tunneling",
+			Name:        "Tor / WireGuard Routing",
 			ID:          "splittun",
 			ConfigKey:   "splittun/enable",
 			ConfigScope: "splittun/",
@@ -105,26 +95,6 @@ var (
 		<circle cx="19" cy="6" r="2" /> <circle cx="19" cy="18" r="2" /> <circle cx="4" cy="12" r="2" />
 	</g>
 	</svg>
-			`,
-		},
-		{
-			Name:              "Safing Privacy Network",
-			ID:                string(account.FeatureSPN),
-			RequiredFeatureID: account.FeatureSPN,
-			ConfigKey:         "spn/enable",
-			ConfigScope:       "spn/",
-			InPackage:         packagePro,
-			icon: `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" stroke="currentColor" class="text-green-300">
-      <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5">
-        <path
-          d="M6.488 15.581c.782.781.782 2.048 0 2.829-.782.781-2.049.781-2.83 0-.782-.781-.782-2.048 0-2.829.781-.781 2.048-.781 2.83 0M13.415 3.586c.782.781.782 2.048 0 2.829-.782.781-2.049.781-2.83 0-.782-.781-.782-2.048 0-2.829.781-.781 2.049-.781 2.83 0M20.343 15.58c.782.781.782 2.048 0 2.829-.782.781-2.049.781-2.83 0-.782-.781-.782-2.048 0-2.829.781-.781 2.048-.781 2.83 0">
-        </path>
-        <path
-          d="M17.721 18.581C16.269 20.071 14.246 21 12 21c-1.146 0-2.231-.246-3.215-.68M4.293 15.152c-.56-1.999-.352-4.21.769-6.151.574-.995 1.334-1.814 2.205-2.449M13.975 5.254c2.017.512 3.834 1.799 4.957 3.743.569.985.899 2.041 1.018 3.103">
-        </path>
-      </g>
-    </svg>
 			`,
 		},
 	}

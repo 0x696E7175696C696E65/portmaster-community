@@ -83,7 +83,7 @@ func registerUpdateConfig() error {
 		ExpertiseLevel:  config.ExpertiseLevelExpert,
 		ReleaseLevel:    config.ReleaseLevelStable,
 		RequiresRestart: false,
-		DefaultValue:    true,
+		DefaultValue:    false,
 		Annotations: config.Annotations{
 			config.DisplayOrderAnnotation: -12,
 			config.CategoryAnnotation:     "Updates",
@@ -116,7 +116,7 @@ func registerUpdateConfig() error {
 
 func initUpdateConfig() {
 	releaseChannel = config.Concurrent.GetAsString(ReleaseChannelKey, ReleaseChannelStable)
-	enableSoftwareUpdates = config.Concurrent.GetAsBool(enableSoftwareUpdatesKey, true)
+	enableSoftwareUpdates = config.Concurrent.GetAsBool(enableSoftwareUpdatesKey, false)
 	enableIntelUpdates = config.Concurrent.GetAsBool(enableIntelUpdatesKey, true)
 
 	initialReleaseChannel = releaseChannel()
@@ -129,6 +129,6 @@ func initUpdateConfig() {
 }
 
 func configureUpdates() {
-	module.instance.BinaryUpdates().Configure(enableSoftwareUpdates(), configure.GetBinaryUpdateURLs(releaseChannel()))
+	module.instance.BinaryUpdates().Configure(false, configure.GetBinaryUpdateURLs(releaseChannel()))
 	module.instance.IntelUpdates().Configure(enableIntelUpdates(), configure.DefaultIntelIndexURLs)
 }

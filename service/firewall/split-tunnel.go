@@ -30,8 +30,6 @@ func checkSplitTunneling(ctx context.Context, conn *network.Connection) {
 	case conn.Process().Pid == ownPID:
 		// Bypass tunneling for own connections.
 		return
-	case !splittun.IsReady():
-		return
 	}
 
 	// Get profile.
@@ -73,6 +71,11 @@ func checkSplitTunneling(ctx context.Context, conn *network.Connection) {
 	case endpoints.Denied:
 		return
 	case endpoints.Permitted, endpoints.NoMatch:
+	}
+
+	if !splittun.IsReady() {
+		conn.Failed("selected routing module is unavailable", profile.CfgOptionSplitTunUseKey)
+		return
 	}
 
 	conn.SaveWhenFinished()
