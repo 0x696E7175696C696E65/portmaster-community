@@ -91,6 +91,7 @@ allow = ["clippy::collapsible_else_if"]
 
 [workspace]
 members = ["vendor/tauri-plugin-websocket"]
+exclude = ["vendor/glib", "tests/glib-backport"]
 
 # ---------------------------------------------------------------------------
 # Temporary tao patch: fix for random UI crashes on Windows
@@ -100,9 +101,11 @@ members = ["vendor/tauri-plugin-websocket"]
 # Full explanation: https://github.com/safing/portmaster-tauri-tao-patch and
 # src/windows_tao_patch.rs (which also guards against this patch being dropped).
 #
-# Everything belonging to the patch is in this block. To remove the patch:
-# delete this block, delete src/windows_tao_patch.rs and its two references in
-# src/main.rs, run `cargo check`. Remove once one of these ships in a release:
+# To remove the tao workaround: delete its Windows-only dependency below,
+# delete only the tao entry in [patch.crates-io], and delete src/windows_tao_patch.rs
+# and its two references in src/main.rs, then run `cargo check`. Retain the shared
+# [patch.crates-io] section and the unrelated GLib security backport.
+# Remove the tao workaround once one of these ships in a release:
 #   https://github.com/tauri-apps/tauri/pull/15411
 #   https://github.com/tauri-apps/tao/pull/1334
 # ---------------------------------------------------------------------------
@@ -117,6 +120,8 @@ version = "2"
 #    macOS compile unchanged upstream code from the fork, only fetched from
 #    GitHub instead of crates.io.
 [patch.crates-io]
+# Reviewed GLib 0.18.5 iterator fix; provenance in vendor/glib/COMMUNITY-PATCH.md.
+glib = { path = "vendor/glib" }
 tao = { git = "https://github.com/safing/portmaster-tauri-tao-patch", rev = "205d3b80f50e577d575e2f79a9d318941cecb254" } # tag tao-v0.32.8-portmaster.1
 #tao = { path = "../../../../portmaster-tauri-tao-patch" }
 # ------------------------------- end of tao patch --------------------------
