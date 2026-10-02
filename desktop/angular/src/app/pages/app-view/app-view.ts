@@ -61,6 +61,7 @@ import { SfngNetqueryViewer } from 'src/app/shared/netquery';
 import { EditProfileDialog } from './../../shared/edit-profile-dialog/edit-profile-dialog';
 
 @Component({
+  standalone: false,
   templateUrl: './app-view.html',
   styleUrls: ['../page.scss', './app-view.scss'],
   animations: [fadeOutAnimation, fadeInAnimation],

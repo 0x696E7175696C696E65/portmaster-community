@@ -36,6 +36,7 @@ export type SfngSearchbarSuggestion<K extends keyof NetqueryConnection> = {
 }
 
 @Directive({
+  standalone: false,
   selector: '[sfngNetquerySuggestion]',
   exportAs: 'sfngNetquerySuggestion'
 })
@@ -65,6 +66,7 @@ export class SfngNetquerySuggestionDirective<K extends keyof NetqueryConnection>
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-searchbar',
   templateUrl: './searchbar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

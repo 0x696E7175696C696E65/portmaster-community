@@ -29,6 +29,7 @@ export type TicketInfo = GithubIssue | PrivateTicket;
 
 
 @Component({
+  standalone: false,
   templateUrl: './progress-dialog.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

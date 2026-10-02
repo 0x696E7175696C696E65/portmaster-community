@@ -21,7 +21,8 @@ try {
     Invoke-Gate 'go-version' $GoCommand @('version')
     Invoke-Gate 'node-version' 'node' @('--version')
     Invoke-Gate 'git-diff-check' 'git' @('-c', 'core.whitespace=blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol', 'diff', '--check')
-    $packages = @('./service/splittun/proxy','./spn/access','./spn/captain','./service/network','./service/firewall','./service/profile','./service/splittun','./service/configure','./service/core')
+    $packages = @('./base/api','./service/updates','./service/splittun/proxy','./spn/access','./spn/captain','./service/network','./service/firewall','./service/profile','./service/splittun','./service/configure','./service/core')
+    Invoke-Gate 'windows-permission-regressions' $GoCommand @('test','./base/utils','-run','Test(SetFilePermission|EnsureDirectory)','-count=1')
     Invoke-Gate 'go-test' $GoCommand (@('test','-short') + $packages)
     Invoke-Gate 'go-vet' $GoCommand (@('vet') + $packages)
     Invoke-Gate 'core-build' $GoCommand @('build','-o',(Join-Path $evidenceRoot 'portmaster-core.exe'),'./cmds/portmaster-core')
@@ -29,6 +30,8 @@ try {
         Invoke-Gate 'ui-regressions' 'node' @('--test','scripts/community-ui.test.cjs')
         Push-Location (Join-Path $repoRoot 'desktop/angular')
         try {
+            Invoke-Gate 'sanitizer-bypass-guard' 'npm.cmd' @('run','lint:security')
+            Invoke-Gate 'navigation-security' 'npm.cmd' @('run','test:security')
             Invoke-Gate 'angular-libraries' 'npm.cmd' @('run','build-libs:dev')
             Invoke-Gate 'angular-production' '.\node_modules\.bin\ng.cmd' @('build','--configuration','production','--base-href','/ui/modules/portmaster/')
         } finally { Pop-Location }

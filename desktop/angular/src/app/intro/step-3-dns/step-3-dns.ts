@@ -11,6 +11,7 @@ interface QuickSettingModel extends QuickSetting<any> {
 }
 
 @Component({
+  standalone: false,
   templateUrl: './step-3-dns.html',
   styleUrls: ['../step.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

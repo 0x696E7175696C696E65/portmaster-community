@@ -7,6 +7,7 @@ import { ActionIndicatorService } from 'src/app/shared/action-indicator';
 import { fadeInAnimation, moveInOutListAnimation } from 'src/app/shared/animations';
 
 @Component({
+  standalone: false,
   templateUrl: './monitor.html',
   styleUrls: ['../page.scss', './monitor.scss'],
   providers: [],

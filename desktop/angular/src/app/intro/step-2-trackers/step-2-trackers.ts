@@ -7,6 +7,7 @@ import { mergeMap } from "rxjs/operators";
 import { SaveSettingEvent } from "src/app/shared/config/generic-setting";
 
 @Component({
+  standalone: false,
   templateUrl: './step-2-trackers.html',
   styleUrls: ['../step.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

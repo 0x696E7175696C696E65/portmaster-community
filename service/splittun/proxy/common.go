@@ -21,7 +21,8 @@ type LocalBinding struct {
 	IP net.IP
 
 	// Interface is the name of the network interface (e.g. "eth0") to bind
-	// the outgoing socket to via SO_BINDTODEVICE (Linux only).
+	// the outgoing socket to (Linux and Windows). Other platforms refuse
+	// a named interface instead of silently using their default route.
 	// An empty string disables interface-level binding.
 	Interface string
 }
@@ -36,7 +37,7 @@ type LocalBinding struct {
 //   - remotePort: required upstream port.
 //   - binding: optional local binding; nil lets the OS choose freely.
 //     Set binding.IP to pin the source address, binding.Interface to restrict
-//     the socket to a specific network device (Linux only).
+//     the socket to a specific network device (Linux and Windows).
 //   - extraInfo: optional caller-defined value attached to the session's ConnContext.
 //   - err: non-nil rejects the session without dialling upstream.
 type DeciderFunc func(local net.Addr, peer net.Addr) (remoteIP net.IP, remotePort uint16, binding *LocalBinding, extraInfo any, err error)

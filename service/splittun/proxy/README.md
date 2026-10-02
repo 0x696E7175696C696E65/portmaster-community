@@ -31,12 +31,17 @@ shutdown.
 // LocalBinding carries the local-side binding parameters for an outbound proxy
 // connection.  Both fields are optional and may be set independently.
 type LocalBinding struct {
+    // SOCKSProxy selects a literal loopback Tor SOCKS endpoint. Negotiation
+    // observes DialTimeout; failure never falls back to a direct dial.
+    SOCKSProxy string
+
     // IP is the local source address to bind the outgoing socket to.
     // If nil, the OS selects an appropriate source address.
     IP net.IP
 
     // Interface is the name of the network interface (e.g. "eth0") to bind
-    // the outgoing socket to via SO_BINDTODEVICE (Linux only).
+    // the outgoing socket to on Linux and Windows. Other platforms reject
+    // a selected interface rather than silently using the default route.
     // An empty string disables interface-level binding.
     Interface string
 }
@@ -51,7 +56,7 @@ type LocalBinding struct {
 //   - remotePort: required upstream port.
 //   - binding:    optional local binding; nil lets the OS choose freely.
 //                 Set binding.IP to pin the source address, binding.Interface
-//                 to restrict the socket to a specific network device (Linux).
+//                 to restrict the socket to a specific network device (Linux/Windows).
 //   - extraInfo:  optional caller-defined value attached to the session's ConnContext.
 //   - err:        non-nil rejects the session without dialling upstream.
 type DeciderFunc func(local net.Addr, peer net.Addr) (

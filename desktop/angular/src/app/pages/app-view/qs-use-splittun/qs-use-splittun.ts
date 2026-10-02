@@ -13,6 +13,7 @@ const configKeys = {
 } as const;
 
 @Component({
+  standalone: false,
   selector: 'app-qs-use-splittun',
   templateUrl: './qs-use-splittun.html',
   changeDetection: ChangeDetectionStrategy.OnPush

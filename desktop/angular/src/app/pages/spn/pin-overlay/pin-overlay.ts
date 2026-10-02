@@ -17,6 +17,7 @@ export interface PinOverlayHoverEvent {
 }
 
 @Component({
+  standalone: false,
   templateUrl: './pin-overlay.html',
   styleUrls: [
     './pin-overlay.scss'
@@ -80,7 +81,7 @@ export class PinOverlayComponent implements OnInit {
   private oldPositionStrategy?: PositionStrategy;
 
   @HostListener('mouseenter')
-  onHostElementMouseEnter(event: MouseEvent) {
+  onHostElementMouseEnter() {
     this.overlayHover.next({
       type: 'enter',
       pinID: this.mapPin.pin.ID
@@ -90,7 +91,7 @@ export class PinOverlayComponent implements OnInit {
   }
 
   @HostListener('mouseleave')
-  onHostElementMouseLeave(event: MouseEvent) {
+  onHostElementMouseLeave() {
     this.overlayHover.next({
       type: 'leave',
       pinID: this.mapPin.pin.ID

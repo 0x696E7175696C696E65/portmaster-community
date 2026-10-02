@@ -4,8 +4,10 @@ import { PortalModule } from '@angular/cdk/portal';
 import { ScrollingModule } from '@angular/cdk/scrolling';
 import { CdkTableModule } from '@angular/cdk/table';
 import { CommonModule, registerLocaleData } from '@angular/common';
+import enGbLocale from '@angular/common/locales/en-GB';
+import enUsLocale from '@angular/common/locales/en';
 
-import { APP_INITIALIZER, LOCALE_ID, NgModule } from '@angular/core';
+import { APP_INITIALIZER, LOCALE_ID, NgModule, provideZoneChangeDetection } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -74,8 +76,7 @@ import { SupportProgressDialogComponent } from './pages/support/progress-dialog'
 
 function loadAndSetLocaleInitializer(configService: ConfigService) {
   return async function () {
-    let angularLocaleID = 'en-GB';
-    let nzLocaleID: string = 'en_GB';
+    let angularLocaleID: 'en-GB' | 'en-US' = 'en-GB';
 
     try {
       const setting = await firstValueFrom(configService.get("core/locale"))
@@ -84,11 +85,9 @@ function loadAndSetLocaleInitializer(configService: ConfigService) {
       switch (currentValue) {
         case 'en-US':
           angularLocaleID = 'en-US'
-          nzLocaleID = 'en_US'
           break;
         case 'en-GB':
           angularLocaleID = 'en-GB'
-          nzLocaleID = 'en_GB'
           break;
 
         default:
@@ -98,25 +97,11 @@ function loadAndSetLocaleInitializer(configService: ConfigService) {
       console.error(`failed to get locale setting, using default en-GB:`, err)
     }
 
-    try {
-      // Get name of module.
-      let localeModuleID = angularLocaleID;
-      if (localeModuleID == "en-US") {
-        localeModuleID = "en";
-      }
-
-      /* webpackInclude: /(en|en-GB)\.mjs$/ */
-      /* webpackChunkName: "./l10n-base/[request]"*/
-      await import(`../../node_modules/@angular/common/locales/${localeModuleID}.mjs`)
-        .then(locale => {
-          registerLocaleData(locale.default)
-
-          localeConfig.localeId = angularLocaleID;
-          localeConfig.nzLocale = (i18n as any)[nzLocaleID];
-        })
-    } catch (err) {
-      console.error(`failed to load locale module for ${angularLocaleID}:`, err)
-    }
+    // Resolve only the two supported locales through Angular's public exports.
+    // Package internals changed from .mjs to .js in Angular 21.
+    registerLocaleData(angularLocaleID === 'en-US' ? enUsLocale : enGbLocale, angularLocaleID);
+    localeConfig.localeId = angularLocaleID;
+    localeConfig.nzLocale = angularLocaleID === 'en-US' ? i18n.en_US : i18n.en_GB;
   }
 }
 
@@ -210,6 +195,7 @@ const localeConfig = {
   ],
   bootstrap: [AppComponent],
   providers: [
+    provideZoneChangeDetection(),
     {
       provide: APP_INITIALIZER, useFactory: loadAndSetLocaleInitializer, deps: [ConfigService], multi: true
     },

@@ -11,6 +11,7 @@ export const STEP_ANIMATION_DIRECTION = new InjectionToken<'left' | 'right'>('ST
  * move animations.
  */
 @Component({
+  standalone: false,
   template: `
     <div [@moveInOut]="{value: _appAnimate, params: {in: in, out: out}}" class="flex flex-col overflow-auto">
       <ng-template [cdkPortalOutlet]="portal"></ng-template>

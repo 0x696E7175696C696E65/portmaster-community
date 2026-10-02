@@ -10,6 +10,7 @@ export interface LaneModel extends Lane {
 }
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'spn-pin-list',
   templateUrl: './pin-list.html',

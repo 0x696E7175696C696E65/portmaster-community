@@ -12,6 +12,7 @@ export interface Path {
 
 /** Community routing setup has no hosted network or account dependencies. */
 @Component({
+  standalone: false,
   templateUrl: './spn-page.html',
   styleUrls: ['./spn-page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

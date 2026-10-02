@@ -34,11 +34,11 @@ Tor does not support SOCKS UDP association, so UDP traffic selected for Tor is b
 4. Exclude the WireGuard process from app routing. Ensure the tunnel supports every destination and IP family you intend to route; an absent family is rejected.
 5. Configure DNS separately. Portmaster does not create WireGuard keys, provision peers, or operate a VPN service.
 
-See [WireGuard's quick start](https://www.wireguard.com/quickstart/). Existing connections, DNS, localhost traffic, inbound traffic, unsupported protocols, and deliberately excluded traffic are outside the new-connection routing policy. The full desktop/kernel path still needs live tunnel and disconnect testing before a production release.
+See [WireGuard's quick start](https://www.wireguard.com/quickstart/). Selected new outbound connections using unsupported protocols are blocked instead of using the default route. Existing connections, DNS, localhost traffic, inbound traffic, and deliberately excluded traffic are outside the new-connection routing policy. The full desktop/kernel path still needs live tunnel and disconnect testing before a production release.
 
 ## Build and validation
 
-The upstream source currently requires Go 1.26.3. Build the Windows core with:
+Use the patched Go 1.26.8 toolchain declared in `go.mod`. Build the Windows core with:
 
 ```powershell
 go build -o portmaster-core.exe ./cmds/portmaster-core
@@ -66,6 +66,6 @@ The upstream GPL-3.0 license, copyright notices, and bundled asset licenses are 
 
 ## Community help and secure development
 
-See [Getting started](docs/community/getting-started.md), [Routing and settings](docs/community/routing.md), [Contributing](CONTRIBUTING.md), and [Security policy](SECURITY.md). The [SSDF process and gap map](docs/security/ssdf.md) records our development requirements and outstanding evidence. This experimental fork does not claim NIST certification or a completed security assessment.
+See [Getting started](docs/community/getting-started.md), [Routing and settings](docs/community/routing.md), [Contributing](CONTRIBUTING.md), and [Security policy](SECURITY.md). The [SSDF process and gap map](docs/security/ssdf.md) records our development requirements and outstanding evidence. This experimental fork does not claim NIST certification or comprehensive security assurance.
 
-The Git-server workflow is in .gitea/workflows/community-security.yml. It requires a configured isolated Windows runner and server-side required checks; those settings have not been verified. The audit step fails on high or critical inherited dependency findings until they are resolved.
+The [2026-10-02 security audit](docs/security/audit-2026-10-02.md) records fixes, validation, and remaining limitations. Security checks run from `.github/workflows/community-security.yml` and `.gitea/workflows/community-security.yml`, with read-only permissions and pinned actions/scanners. Gitea requires a configured isolated Windows runner; server-side required checks and branch protection still need verification. Upstream publishing workflows are archived outside the active workflow directory.

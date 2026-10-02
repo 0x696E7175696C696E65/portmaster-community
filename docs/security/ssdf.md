@@ -16,7 +16,7 @@ The following is a project-specific implementation map using NIST practice ident
 | --- | --- | --- |
 | PO.1 | Requirements in threat model; security impact in PR template | Initial requirements documented; acceptance tracked per change |
 | PO.2 | Maintainer owns triage; independent review required by contribution policy | Owner named; second reviewer and training evidence pending |
-| PO.3 | Locked Go/npm/Cargo dependencies; portable check script with logs | Local gate available; scanner coverage and CI runner pending |
+| PO.3 | Locked Go/npm/Cargo dependencies; pinned Go/Node/Rust/scanners and check logs | Local source/dependency gates passed; CI configuration added; server enforcement/runner verification pending |
 | PO.4 | Release checklist defines failure criteria and records exceptions | Criteria documented; no stable release approval recorded |
 | PO.5 | Isolated test machine, least privilege, MFA, reviewed credentials and toolchains | Local development only; server and runner isolation unverified |
 | PS.1 | Preserve Git history; protect main branch; restrict write access | History retained; access review and branch protection unverified |
@@ -24,15 +24,15 @@ The following is a project-specific implementation map using NIST practice ident
 | PS.3 | Archive source revision, locks, build logs, inventories, artifacts and rollback | Local evidence retained; durable release archive and standard SBOM pending |
 | PW.1 | Threat model for LocalSystem service, API, update and routing boundaries | Initial model documented; independent design review pending |
 | PW.2 | Security-sensitive design review before a stable release | Independent reviewer not assigned |
-| PW.4 | Review dependency provenance, licensing and vulnerability reports | Lockfiles retained; inherited audit findings require triage |
+| PW.4 | Review dependency provenance, licensing and vulnerability reports | 2026-10-02 audit fixes npm/Go/native vulnerability records; informational Rust warnings and driver binaries remain tracked |
 | PW.5 | Loopback-only Tor endpoints, explicit errors, disabled hosted APIs, no direct proxy fallback | Targeted regression tests available; broader code review pending |
 | PW.6 | Record compiler/tool versions and build flags; hardened reproducible release build | Development builds checked; release hardening and reproducibility review pending |
-| PW.7 | Go vet, source review and regression checks | Targeted analysis available; full SAST/secrets scan pending |
+| PW.7 | Go vet, source review, sanitizer lint, adversarial regressions | Bounded API/native/update/routing/driver-parser review completed; full SAST/history secrets scan pending |
 | PW.8 | Targeted tests plus real Tor/WireGuard, IPv4/IPv6, DNS, driver and update tests | Unit/build evidence available; tunnel and driver integration matrix pending |
 | PW.9 | Binary updates and hosted SPN disabled; installer loopback API; settings documented | Initial defaults set; upgrade/default compatibility tests pending |
 | RV.1 | Review advisories and dependency scans at changes and releases; accept reports | Manual intake only; private reporting deferred |
-| RV.2 | Triage severity, exploitability, affected releases, mitigation and fix in risk register | Initial register created; dependency findings not resolved |
-| RV.3 | Record root cause, related affected paths, regression test and process correction | Template available; incident response execution not yet demonstrated |
+| RV.2 | Triage severity, exploitability, affected releases, mitigation and fix in risk register | Audit report records fixes and remaining Linux/driver/maintenance risks; no stable approval |
+| RV.3 | Record root cause, related affected paths, regression test and process correction | 2026-10-02 audit links root causes, related sinks and regressions; operational incident response remains untested |
 
 ## Enforcement
 

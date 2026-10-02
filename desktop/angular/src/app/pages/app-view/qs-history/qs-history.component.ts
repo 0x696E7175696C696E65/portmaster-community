@@ -21,6 +21,7 @@ import { share } from 'rxjs/operators';
 import { SaveSettingEvent } from 'src/app/shared/config';
 
 @Component({
+  standalone: false,
   selector: 'app-qs-history',
   templateUrl: './qs-history.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

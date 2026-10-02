@@ -1,4 +1,4 @@
-import { AppProfile } from './../../../../../dist-lib/safing/portmaster-api/lib/app-profile.types.d';
+import { AppProfile } from '@safing/portmaster-api';
 import { ChangeDetectionStrategy, Component, OnInit, TrackByFunction, inject } from "@angular/core";
 import { Router } from '@angular/router';
 import { PortapiService } from '@safing/portmaster-api';
@@ -6,6 +6,7 @@ import { SFNG_DIALOG_REF, SfngDialogRef } from "@safing/ui";
 import { ActionIndicatorService } from 'src/app/shared/action-indicator';
 
 @Component({
+  standalone: false,
   templateUrl: './merge-profile-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

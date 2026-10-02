@@ -7,6 +7,7 @@ import { SfngSearchbarFields } from "../searchbar";
 import { connectionFieldTranslation } from "../utils";
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-search-overlay',
   templateUrl: './search-overlay.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

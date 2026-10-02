@@ -5,6 +5,7 @@ import { ActionRunner, Button, SFNG_TIP_UP_ACTION_RUNNER, TipUp } from './transl
 import { TIPUP_TOKEN } from "./utils";
 
 @Component({
+  standalone: false,
   selector: 'sfng-tipup-container',
   templateUrl: './tipup.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

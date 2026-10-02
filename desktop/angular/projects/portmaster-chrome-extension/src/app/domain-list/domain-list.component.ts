@@ -11,6 +11,7 @@ interface DomainRequests {
 }
 
 @Component({
+  standalone: false,
   selector: 'ext-domain-list',
   templateUrl: './domain-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -95,7 +96,7 @@ export class ExtDomainListComponent implements OnInit {
           ],
           page: 0,
           pageSize: 1,
-        })
+        }, 'browser-extension')
           .subscribe(result => {
             if (!result[0]) {
               return;

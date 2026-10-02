@@ -37,7 +37,7 @@ try {
     $healthy = $false
     for ($attempt=0; $attempt -lt 20; $attempt++) {
         try {
-            $response = Invoke-WebRequest -Uri 'http://127.0.0.1:817/api/v1/debug/info' -UseBasicParsing -TimeoutSec 2
+            $response = Invoke-WebRequest -Uri 'http://127.0.0.1:817/api/v1/ready' -UseBasicParsing -TimeoutSec 2
             if ($response.StatusCode -eq 200) { $healthy = $true; break }
         } catch { Start-Sleep -Seconds 1 }
     }

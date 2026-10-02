@@ -7,6 +7,7 @@ import { MapPin, MapService } from './../map.service';
 import { PinDetailsComponent } from './../pin-details/pin-details';
 
 @Component({
+  standalone: false,
   templateUrl: './country-details.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

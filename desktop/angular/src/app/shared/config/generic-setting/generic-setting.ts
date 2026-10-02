@@ -22,6 +22,7 @@ export interface SaveSettingEvent<S extends BaseSetting<any, any> = any> {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-generic-setting',
   templateUrl: './generic-setting.html',
   exportAs: 'appGenericSetting',

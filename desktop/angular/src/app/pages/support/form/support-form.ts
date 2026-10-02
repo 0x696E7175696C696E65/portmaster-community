@@ -16,6 +16,7 @@ import { INTEGRATION_SERVICE } from 'src/app/integration';
 import { SupportProgressDialogComponent, TicketData, TicketInfo } from '../progress-dialog';
 
 @Component({
+  standalone: false,
   templateUrl: './support-form.html',
   styleUrls: ['./support-form.scss'],
   animations: [fadeInAnimation, moveInOutAnimation, fadeInListAnimation]

@@ -5,6 +5,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 
 @Component({
+  standalone: false,
   selector: 'app-ordered-list',
   templateUrl: './ordered-list.html',
   styleUrls: ['./ordered-list.scss'],

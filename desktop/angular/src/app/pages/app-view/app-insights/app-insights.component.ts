@@ -12,6 +12,7 @@ interface CountryBarData {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-app-insights',
   templateUrl: './app-insights.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush

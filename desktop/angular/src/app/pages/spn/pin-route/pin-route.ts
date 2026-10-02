@@ -4,6 +4,7 @@ import { take } from 'rxjs';
 import { MapPin, MapService } from './../map.service';
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sfng-spn-pin-route',
   templateUrl: './pin-route.html',

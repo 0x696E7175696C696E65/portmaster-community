@@ -6,6 +6,7 @@ import { LaneModel } from '../pin-list/pin-list';
 import { MapPin, MapService } from './../map.service';
 
 @Component({
+  standalone: false,
   templateUrl: './pin-details.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

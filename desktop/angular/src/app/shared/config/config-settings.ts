@@ -55,6 +55,7 @@ interface Category {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-settings-view',
   templateUrl: './config-settings.html',
   styleUrls: ['./config-settings.scss'],

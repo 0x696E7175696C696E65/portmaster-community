@@ -99,6 +99,7 @@ interface QuickDateSetting {
  */
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sfng-netquery-viewer',
   templateUrl: './netquery.component.html',

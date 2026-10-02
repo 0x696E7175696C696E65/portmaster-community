@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, Input, isDevMode, OnInit, HostBindi
 import { coerceBooleanProperty } from '@angular/cdk/coercion';
 
 @Component({
+  standalone: false,
   selector: 'app-switch-item',
   template: '<ng-content></ng-content>',
   styleUrls: ['./switch-item.scss'],

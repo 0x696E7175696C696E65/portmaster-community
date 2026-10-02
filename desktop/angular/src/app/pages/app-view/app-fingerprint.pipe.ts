@@ -6,7 +6,8 @@ import { AppProfile, FingerprintType, FingerpringOperation } from '@safing/portm
  * Only shown when the profile has exactly one fingerprint of type Path or Cmdline.
  * Examples: "/usr/bin/app", "[Path:Regex] .*firefox.*", "[Command] /usr/bin/python3 script.py", "[Command:Regex] .*--profile.*"
  */
-@Pipe({ name: 'appFingerprint' })
+@Pipe({
+  standalone: false, name: 'appFingerprint' })
 export class AppFingerprintPipe implements PipeTransform {
   transform(profile: AppProfile): string | null {
     if (profile?.Fingerprints?.length !== 1) return null;

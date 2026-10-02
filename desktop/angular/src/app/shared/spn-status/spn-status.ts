@@ -8,6 +8,7 @@ import { fadeInAnimation, fadeOutAnimation } from "../animations";
 import { SPNAccountDetailsComponent } from '../spn-account-details';
 
 @Component({
+  standalone: false,
   selector: 'app-spn-status',
   templateUrl: './spn-status.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

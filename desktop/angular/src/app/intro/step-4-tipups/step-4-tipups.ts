@@ -3,6 +3,7 @@ import { Step } from "@safing/ui";
 import { of } from "rxjs";
 
 @Component({
+  standalone: false,
   templateUrl: './step-4-tipups.html',
   styleUrls: ['../step.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

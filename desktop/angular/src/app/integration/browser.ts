@@ -1,4 +1,5 @@
 import { AppInfo, IntegrationService, PortmasterDir, ProcessInfo } from "./integration";
+import { navigationTarget } from './navigation';
 
 export class BrowserIntegrationService implements IntegrationService {
   writeToClipboard(text: string): Promise<void> {
@@ -10,8 +11,11 @@ export class BrowserIntegrationService implements IntegrationService {
   }
 
   openExternal(pathOrUrl: string): Promise<void> {
-    window.open(pathOrUrl, '_blank')
-
+    const destination = navigationTarget(pathOrUrl, location.href);
+    if (destination.kind !== 'external') {
+      return Promise.reject(new Error('External links must use HTTP or HTTPS'));
+    }
+    window.open(destination.url, '_blank', 'noopener,noreferrer');
     return Promise.resolve();
   }
 

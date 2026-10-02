@@ -3,11 +3,49 @@ package proxy
 import (
 	"context"
 	"encoding/binary"
+	"errors"
 	"io"
 	"net"
 	"testing"
 	"time"
 )
+
+func TestTorHandshakeHasDialDeadline(t *testing.T) {
+	socks, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer socks.Close()
+	accepted := make(chan net.Conn, 1)
+	go func() {
+		conn, err := socks.Accept()
+		if err == nil {
+			accepted <- conn
+		}
+	}()
+	// A daemon accepts the connection but never answers the greeting.
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	started := time.Now()
+	conn, err := dialUpstream(ctx, &net.Dialer{Timeout: 100 * time.Millisecond}, "tcp", "192.0.2.1:443", &LocalBinding{SOCKSProxy: socks.Addr().String()})
+	if conn != nil {
+		conn.Close()
+	}
+	if err == nil || time.Since(started) > time.Second {
+		t.Fatalf("stalled handshake exceeded dial deadline: %v (%s)", err, time.Since(started))
+	}
+	if errors.Is(err, context.Canceled) {
+		t.Fatalf("expected timeout instead of caller cancellation: %v", err)
+	}
+	select {
+	case conn := <-accepted:
+		defer conn.Close()
+		_ = conn.SetReadDeadline(time.Now().Add(time.Second))
+		_, _ = io.Copy(io.Discard, conn)
+	case <-ctx.Done():
+		t.Fatal("SOCKS daemon was not reached")
+	}
+}
 
 func TestParseTorEndpoint(t *testing.T) {
 	for _, selector := range []string{"tor", "tor://127.0.0.1:9150", "tor://[::1]:9050"} {

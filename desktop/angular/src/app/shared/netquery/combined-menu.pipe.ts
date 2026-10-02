@@ -6,6 +6,7 @@ interface Model {
 }
 
 @Pipe({
+  standalone: false,
   pure: true,
   name: 'combinedMenu'
 })

@@ -24,6 +24,7 @@ func (i *testInstance) UI() *ui.UI                                  { return nil
 
 func TestPerformUpdate(t *testing.T) {
 	t.Parallel()
+	requireUpdateTestPrivileges(t)
 
 	// Initialize mock instance
 	stub := &testInstance{}
@@ -105,6 +106,7 @@ func TestPerformUpdate(t *testing.T) {
 
 func TestPerformUpdateRepairsCorruptedResourcesAtSameVersion(t *testing.T) {
 	t.Parallel()
+	requireUpdateTestPrivileges(t)
 
 	stub := &testInstance{}
 	installedDir := t.TempDir()

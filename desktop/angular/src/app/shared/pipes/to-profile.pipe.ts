@@ -3,6 +3,7 @@ import { AppProfile, AppProfileService } from "@safing/portmaster-api";
 import { Subscription } from "rxjs";
 
 @Pipe({
+  standalone: false,
   name: 'toAppProfile',
   pure: false
 })

@@ -3,6 +3,7 @@ import { ScopeTranslation } from '@safing/portmaster-api';
 import { parseDomain } from '../../utils';
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-scope-label',
   templateUrl: 'scope-label.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

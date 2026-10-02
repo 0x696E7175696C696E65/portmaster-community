@@ -23,6 +23,7 @@ import {
 import { SaveSettingEvent } from 'src/app/shared/config/generic-setting/generic-setting';
 
 @Component({
+  standalone: false,
   selector: 'app-qs-select-exit',
   templateUrl: './qs-select-exit.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

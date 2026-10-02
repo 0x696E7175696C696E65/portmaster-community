@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path"
 	"runtime/debug"
 	"strings"
@@ -15,12 +14,23 @@ import (
 	"github.com/gorilla/mux"
 
 	"github.com/safing/portmaster/base/log"
-	"github.com/safing/portmaster/base/utils"
 	"github.com/safing/portmaster/service/mgr"
 )
 
 // EnableServer defines if the HTTP server should be started.
 var EnableServer = true
+
+// Production UI assets are local. Native WebView IPC remains available while
+// third-party network connections, executable embeds and framing are blocked.
+const productionContentSecurityPolicy = "default-src 'self'; " +
+	"script-src 'self'; " +
+	"connect-src 'self' ipc: http://ipc.localhost; " +
+	"style-src 'self' 'unsafe-inline'; " +
+	"img-src 'self' data: blob:; " +
+	"base-uri 'self'; " +
+	"form-action 'self'; " +
+	"object-src 'none'; " +
+	"frame-ancestors 'none'"
 
 var (
 	// mainMux is the main mux router.
@@ -31,11 +41,6 @@ var (
 		ReadHeaderTimeout: 10 * time.Second,
 	}
 	handlerLock sync.RWMutex
-
-	allowedDevCORSOrigins = []string{
-		"127.0.0.1",
-		"localhost",
-	}
 )
 
 // RegisterHandler registers a handler with the API endpoint.
@@ -144,54 +149,27 @@ func (mh *mainHandler) handle(w http.ResponseWriter, r *http.Request) error {
 	w.Header().Set("X-XSS-Protection", "1; mode=block")
 	w.Header().Set("X-DNS-Prefetch-Control", "off")
 
+	// A loopback API must not accept attacker-controlled Host names. Browser
+	// DNS rebinding otherwise makes an external site appear to be same-origin.
+	if !allowedRequestHost(r.Host, server.Addr) {
+		http.Error(lrw, "Invalid Host.", http.StatusForbidden)
+		return nil
+	}
+
 	// Add CSP Header in production mode.
 	if !devMode() {
-		w.Header().Set(
-			"Content-Security-Policy",
-			"default-src 'self'; "+
-				"connect-src https://*.safing.io 'self'; "+
-				"style-src 'self' 'unsafe-inline'; "+
-				"img-src 'self' data: blob:",
-		)
+		w.Header().Set("Content-Security-Policy", productionContentSecurityPolicy)
 	}
 
 	// Check Cross-Origin Requests.
 	origin := r.Header.Get("Origin")
 	isPreflighCheck := false
-	if origin != "" {
+	if len(r.Header.Values("Origin")) > 0 {
 
-		// Parse origin URL.
-		originURL, err := url.Parse(origin)
-		if err != nil {
-			tracer.Warningf("api: denied request from %s: failed to parse origin header: %s", r.RemoteAddr, err)
-			http.Error(lrw, "Invalid Origin.", http.StatusForbidden)
-			return nil
-		}
-
-		// Check if the Origin matches the Host.
-		switch {
-		case originURL.Host == r.Host:
-			// Origin (with port) matches Host.
-		case originURL.Hostname() == r.Host:
-			// Origin (without port) matches Host.
-		case originURL.Scheme == "chrome-extension":
-			// Allow access for the browser extension
-			// TODO(ppacher):
-			// This currently allows access from any browser extension.
-			// Can we reduce that to only our browser extension?
-			// Also, what do we need to support Firefox?
-		case devMode() &&
-			utils.StringInSlice(allowedDevCORSOrigins, originURL.Hostname()):
-			// We are in dev mode and the request is coming from the allowed
-			// development origins.
-		default:
-			// Origin and Host do NOT match!
+		if !allowedRequestOrigin(r) {
 			tracer.Warningf("api: denied request from %s: Origin (`%s`) and Host (`%s`) do not match", r.RemoteAddr, origin, r.Host)
 			http.Error(lrw, "Cross-Origin Request Denied.", http.StatusForbidden)
 			return nil
-
-			// If the Host header has a port, and the Origin does not, requests will
-			// also end up here, as we cannot properly check for equality.
 		}
 
 		// Add Cross-Site Headers now as we need them in any case now.

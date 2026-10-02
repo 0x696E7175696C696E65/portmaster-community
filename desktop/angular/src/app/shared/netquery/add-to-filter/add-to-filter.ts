@@ -6,6 +6,7 @@ import { NetqueryHelper } from "../connection-helper.service";
 import { INTEGRATION_SERVICE } from "src/app/integration";
 
 @Directive({
+  standalone: false,
   selector: '[sfngAddToFilter]'
 })
 export class SfngNetqueryAddToFilterDirective implements OnInit, OnDestroy {

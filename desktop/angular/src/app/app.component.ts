@@ -15,6 +15,7 @@ import { INTEGRATION_SERVICE, IntegrationService } from './integration';
 import { TauriIntegrationService } from './integration/taur-app';
 
 @Component({
+  standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

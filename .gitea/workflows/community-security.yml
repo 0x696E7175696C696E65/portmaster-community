@@ -3,16 +3,19 @@ on:
   push:
     branches: [main]
   pull_request:
+permissions:
+  contents: read
 jobs:
   check:
-    # Register an isolated Windows runner with this label before enabling required checks.
-    # No release credentials, privileged installation, or remote cache publishing is used.
     runs-on: windows-latest
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+        with:
+          persist-credentials: false
       - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
         with:
-          go-version: '1.26.3'
+          go-version: '1.26.8'
           cache: false
       - uses: actions/setup-node@3235b876344d2a9aa001b8d1453c930bba69e610
         with:
@@ -24,7 +27,31 @@ jobs:
       - name: Run community gate
         shell: pwsh
         run: ./scripts/security-check.ps1 -BuildUI
-      - name: Audit frontend dependencies (findings fail the check)
+      - name: Check Go vulnerability reachability
+        shell: pwsh
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.8.0 ./cmds/portmaster-core
+      - name: Audit frontend dependencies
         shell: pwsh
         working-directory: desktop/angular
         run: npm.cmd audit --audit-level=high
+      - name: Build native embedded frontend
+        shell: pwsh
+        working-directory: desktop/angular
+        run: npm.cmd run build-tauri
+      - name: Install validated Rust toolchain
+        shell: pwsh
+        run: rustup toolchain install 1.98.1 --profile minimal
+      - name: Test native security boundaries
+        shell: pwsh
+        working-directory: desktop/tauri/src-tauri
+        run: cargo test --workspace --locked --features custom-protocol
+      - name: Test driver protocol bounds
+        shell: pwsh
+        run: cargo +1.98.1 test --locked --manifest-path windows_kext/protocol/Cargo.toml
+      - name: Install pinned Rust advisory scanner
+        shell: pwsh
+        run: cargo +1.98.1 install cargo-audit --version 0.22.2 --locked
+      - name: Audit Rust dependencies
+        shell: pwsh
+        working-directory: desktop/tauri/src-tauri
+        run: cargo audit

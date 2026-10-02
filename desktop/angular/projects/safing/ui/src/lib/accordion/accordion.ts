@@ -4,6 +4,7 @@ import { fadeInAnimation, fadeOutAnimation } from '../animations';
 import { SfngAccordionGroupComponent } from './accordion-group';
 
 @Component({
+  standalone: false,
   selector: 'sfng-accordion',
   templateUrl: './accordion.html',
   exportAs: 'sfngAccordion',

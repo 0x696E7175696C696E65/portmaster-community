@@ -14,9 +14,16 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/safing/portmaster/base/log"
 	"github.com/safing/portmaster/base/utils"
+)
+
+const (
+	maxIndexDownloadSize = 4 << 20 // 4 MiB, before signature verification.
+	maxDownloadSize      = 256 << 20
+	downloadTimeout      = 10 * time.Minute
 )
 
 type Downloader struct {
@@ -33,6 +40,18 @@ func NewDownloader(u *Updater, indexURLs []string) *Downloader {
 	return &Downloader{
 		u:         u,
 		indexURLs: indexURLs,
+		httpClient: http.Client{
+			Timeout: downloadTimeout,
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				if req.URL.Scheme != "https" {
+					return errors.New("update redirect must use HTTPS")
+				}
+				if len(via) >= 10 {
+					return errors.New("too many update redirects")
+				}
+				return nil
+			},
+		},
 	}
 }
 
@@ -76,7 +95,7 @@ func (d *Downloader) updateIndex(ctx context.Context) error {
 
 func (d *Downloader) getIndex(ctx context.Context, url string) (indexData []byte, bundle *Index, err error) {
 	// Download data from URL.
-	indexData, err = d.downloadData(ctx, url)
+	indexData, err = d.downloadData(ctx, url, maxIndexDownloadSize)
 	if err != nil {
 		return nil, nil, fmt.Errorf("GET index: %w", err)
 	}
@@ -182,7 +201,10 @@ artifacts:
 			return fmt.Errorf("write %s to temp file: %w", artifact.Filename, err)
 		}
 
-		_ = utils.SetFilePermission(tmpFilename, artifact.GetFileMode())
+		if err := utils.SetFilePermission(tmpFilename, artifact.GetFileMode()); err != nil {
+			_ = os.Remove(tmpFilename)
+			return fmt.Errorf("protect downloaded artifact %s: %w", artifact.Filename, err)
+		}
 
 		// Rename/Move to actual location.
 		err = os.Rename(tmpFilename, dstFilePath)
@@ -197,7 +219,7 @@ artifacts:
 
 func (d *Downloader) getArtifact(ctx context.Context, artifact *Artifact, url string) ([]byte, error) {
 	// Download data from URL.
-	artifactData, err := d.downloadData(ctx, url)
+	artifactData, err := d.downloadData(ctx, url, maxDownloadSize)
 	if err != nil {
 		return nil, fmt.Errorf("GET artifact: %w", err)
 	}
@@ -220,11 +242,14 @@ func (d *Downloader) getArtifact(ctx context.Context, artifact *Artifact, url st
 	return artifactData, nil
 }
 
-func (d *Downloader) downloadData(ctx context.Context, url string) ([]byte, error) {
+func (d *Downloader) downloadData(ctx context.Context, url string, maxSize int64) ([]byte, error) {
 	// Setup request.
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, http.NoBody)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create GET request to %s: %w", url, err)
+	}
+	if req.URL.Scheme != "https" {
+		return nil, errors.New("update download must use HTTPS")
 	}
 	if UserAgent != "" {
 		req.Header.Set("User-Agent", UserAgent)
@@ -242,12 +267,29 @@ func (d *Downloader) downloadData(ctx context.Context, url string) ([]byte, erro
 		return nil, fmt.Errorf("server returned non-OK status: %d %s", resp.StatusCode, resp.Status)
 	}
 
-	// Read the full body and return it.
-	content, err := io.ReadAll(resp.Body)
+	// Index data is untrusted until its signature is checked. Both advertised
+	// and streamed lengths must be bounded before allocating the full body.
+	if resp.ContentLength > maxSize {
+		return nil, errors.New("update response exceeds size limit")
+	}
+	content, err := readBounded(resp.Body, maxSize)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read body of response: %w", err)
 	}
 	return content, nil
+}
+
+// readBounded reads at most limit+1 bytes so oversized input is rejected rather
+// than silently truncated. Reading to EOF also checks gzip/zip integrity.
+func readBounded(reader io.Reader, limit int64) ([]byte, error) {
+	data, err := io.ReadAll(io.LimitReader(reader, limit+1))
+	if err != nil {
+		return nil, err
+	}
+	if int64(len(data)) > limit {
+		return nil, errors.New("update content exceeds size limit")
+	}
+	return data, nil
 }
 
 // Decompress decompresses the given data according to the specified type.
@@ -270,14 +312,12 @@ func decompressGzip(data []byte) ([]byte, error) {
 	}
 	defer func() { _ = gzipReader.Close() }()
 
-	// Copy from the gzip reader into a new buffer.
-	var buf bytes.Buffer
-	_, err = io.CopyN(&buf, gzipReader, MaxUnpackSize)
-	if err != nil && !errors.Is(err, io.EOF) {
+	data, err = readBounded(gzipReader, MaxUnpackSize)
+	if err != nil {
 		return nil, fmt.Errorf("read gzip file: %w", err)
 	}
 
-	return buf.Bytes(), nil
+	return data, nil
 }
 
 func decompressZip(data []byte) ([]byte, error) {
@@ -300,12 +340,13 @@ func decompressZip(data []byte) ([]byte, error) {
 	}
 	defer func() { _ = fileReader.Close() }()
 
-	// Copy from the zip reader into a new buffer.
-	var buf bytes.Buffer
-	_, err = io.CopyN(&buf, fileReader, MaxUnpackSize)
-	if err != nil && !errors.Is(err, io.EOF) {
+	if file.UncompressedSize64 > MaxUnpackSize {
+		return nil, errors.New("unpacked zip content exceeds size limit")
+	}
+	data, err = readBounded(fileReader, MaxUnpackSize)
+	if err != nil {
 		return nil, fmt.Errorf("read file in zip: %w", err)
 	}
 
-	return buf.Bytes(), nil
+	return data, nil
 }

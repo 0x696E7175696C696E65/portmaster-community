@@ -22,6 +22,7 @@ export type SortByFunc = (a: SelectOption, b: SelectOption) => number;
 export type SelectDisplayMode = 'dropdown' | 'inline';
 
 @Directive({
+  standalone: false,
   selector: '[sfngSelectRenderedListItem]'
 })
 export class SfngSelectRenderedItemDirective implements ListKeyManagerOption {
@@ -47,6 +48,7 @@ export class SfngSelectRenderedItemDirective implements ListKeyManagerOption {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-select',
   templateUrl: './select.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

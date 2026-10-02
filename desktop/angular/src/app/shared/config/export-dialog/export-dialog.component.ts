@@ -16,6 +16,7 @@ export interface ExportConfig {
 }
 
 @Component({
+  standalone: false,
   templateUrl: './export-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

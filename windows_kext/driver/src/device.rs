@@ -29,9 +29,9 @@ pub enum Packet {
 pub struct Device {
     pub(crate) filter_engine: FilterEngine,
     pub(crate) read_leftover: ArrayHolder,
-    pub(crate) event_queue: IOQueue<Info>,          // Queue for events to user-space
-    pub(crate) packet_cache: IdCache,               // Cache of pending packets waiting for verdict
-    pub(crate) connection_cache: ConnectionCache,   // Cache of connections and their verdicts
+    pub(crate) event_queue: IOQueue<Info>, // Queue for events to user-space
+    pub(crate) packet_cache: IdCache,      // Cache of pending packets waiting for verdict
+    pub(crate) connection_cache: ConnectionCache, // Cache of connections and their verdicts
     pub(crate) injector: Injector,
     pub(crate) network_allocator: NetworkAllocator,
     pub(crate) bandwidth_stats: Bandwidth,
@@ -132,13 +132,13 @@ impl Device {
     }
 
     // Called when handle.Write is called from user-space.
-    pub fn write(&mut self, write_request: &mut WriteRequest) {
+    pub fn write(&mut self, write_request: &mut WriteRequest) -> bool {
         // Try parsing the command.
         let mut buffer = write_request.get_buffer();
         let command = protocol::command::parse_type(buffer);
         let Some(command) = command else {
-            err!("Unknown command number: {}", buffer[0]);
-            return;
+            err!("Empty or unknown command");
+            return false;
         };
         buffer = &buffer[1..];
 
@@ -150,7 +150,10 @@ impl Device {
                 self.shutdown();
             }
             CommandType::Verdict => {
-                let verdict = protocol::command::parse_verdict(buffer);
+                let Some(verdict) = protocol::command::parse_verdict(buffer) else {
+                    err!("Truncated verdict command");
+                    return false;
+                };
                 wdk::dbg!("Verdict command");
                 // Received verdict decision for a specific connection.
                 if let Some((key, mut packet)) = self.packet_cache.pop_id(verdict.id) {
@@ -202,7 +205,10 @@ impl Device {
                 }
             }
             CommandType::UpdateV4 => {
-                let update = protocol::command::parse_update_v4(buffer);
+                let Some(update) = protocol::command::parse_update_v4(buffer) else {
+                    err!("Truncated IPv4 update command");
+                    return false;
+                };
                 // Build the new action.
                 if let Some(verdict) = FromPrimitive::from_u8(update.verdict) {
                     // Update with new action.
@@ -226,7 +232,10 @@ impl Device {
                 }
             }
             CommandType::UpdateV6 => {
-                let update = protocol::command::parse_update_v6(buffer);
+                let Some(update) = protocol::command::parse_update_v6(buffer) else {
+                    err!("Truncated IPv6 update command");
+                    return false;
+                };
                 // Build the new action.
                 if let Some(verdict) = FromPrimitive::from_u8(update.verdict) {
                     // Update with new action.
@@ -307,13 +316,14 @@ impl Device {
                 self.connection_cache.clean_ended_connections();
             }
         }
+        true
     }
 
     pub fn shutdown(&mut self) {
         // End blocking operations from the queue. This will end pending read requests.
         self.event_queue.rundown();
 
-		// Resolve all pending packets. This is important for proper driver unload.
+        // Resolve all pending packets. This is important for proper driver unload.
         let pending_packets = self.packet_cache.pop_all();
         for el in pending_packets {
             let key = el.value.0;

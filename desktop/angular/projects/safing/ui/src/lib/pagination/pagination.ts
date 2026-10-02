@@ -40,6 +40,7 @@ export interface Pagination<T> {
 
 
 @Directive({
+  standalone: false,
   selector: '[sfngPageContent]'
 })
 export class SfngPaginationContentDirective<T = any> {
@@ -52,6 +53,7 @@ export interface PageChangeEvent {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-pagination',
   templateUrl: './pagination.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

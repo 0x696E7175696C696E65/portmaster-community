@@ -3,10 +3,12 @@ use crate::device;
 use alloc::boxed::Box;
 use core::sync::atomic::{AtomicPtr, Ordering};
 use num_traits::FromPrimitive;
-use wdk::irp_helpers::{CleanupRequest, CreateRequest, DeviceControlRequest, ReadRequest, WriteRequest};
+use wdk::irp_helpers::{
+    CleanupRequest, CreateRequest, DeviceControlRequest, ReadRequest, WriteRequest,
+};
 use wdk::{err, info, interface};
 use windows_sys::Wdk::Foundation::{DEVICE_OBJECT, DRIVER_OBJECT, IRP};
-use windows_sys::Win32::Foundation::{NTSTATUS, STATUS_SUCCESS};
+use windows_sys::Win32::Foundation::{NTSTATUS, STATUS_NOT_IMPLEMENTED, STATUS_SUCCESS};
 
 static VERSION: [u8; 4] = include!("../../kextinterface/version.txt");
 
@@ -84,7 +86,9 @@ unsafe extern "system" fn driver_unload(_object: *const DRIVER_OBJECT) {
     // The swap is executed exactly once, on the unload path.
     let ptr = DEVICE.swap(core::ptr::null_mut(), Ordering::AcqRel);
     if !ptr.is_null() {
-        unsafe { drop(Box::from_raw(ptr)); }
+        unsafe {
+            drop(Box::from_raw(ptr));
+        }
     }
 }
 
@@ -96,11 +100,14 @@ unsafe extern "system" fn driver_create(
     let mut create_request = CreateRequest::new(irp.as_mut().unwrap());
     if let Some(device) = get_device() {
         let pid = create_request.get_requestor_pid();
-        device.owner_pid.store(pid, core::sync::atomic::Ordering::Release);
+        device
+            .owner_pid
+            .store(pid, core::sync::atomic::Ordering::Release);
         info!("Device opened by PID {}", pid);
     }
     create_request.complete();
-    create_request.get_status()
+    // IofCompleteRequest may release the IRP; never read it afterwards.
+    STATUS_SUCCESS
 }
 
 /// driver_cleanup is triggered when user-space closes the last handle to the device.
@@ -110,11 +117,13 @@ unsafe extern "system" fn driver_cleanup(
 ) -> NTSTATUS {
     let mut cleanup_request = CleanupRequest::new(irp.as_mut().unwrap());
     if let Some(device) = get_device() {
-        let old_pid = device.owner_pid.swap(0, core::sync::atomic::Ordering::Release);
+        let old_pid = device
+            .owner_pid
+            .swap(0, core::sync::atomic::Ordering::Release);
         info!("Device closed by PID {}", old_pid);
     }
     cleanup_request.complete();
-    cleanup_request.get_status()
+    STATUS_SUCCESS
 }
 
 // driver_read event triggered from user-space on file.Read.
@@ -123,6 +132,10 @@ unsafe extern "system" fn driver_read(
     irp: *mut IRP,
 ) -> NTSTATUS {
     let mut read_request = ReadRequest::new(irp.as_mut().unwrap());
+    if read_request.free_space() == 0 {
+        read_request.complete();
+        return read_request.get_status();
+    }
     let Some(device) = get_device() else {
         read_request.complete();
 
@@ -144,10 +157,12 @@ unsafe extern "system" fn driver_write(
         return write_request.get_status();
     };
 
-    device.write(&mut write_request);
-
-    write_request.mark_all_as_read();
-    write_request.complete();
+    if device.write(&mut write_request) {
+        write_request.mark_all_as_read();
+        write_request.complete();
+    } else {
+        write_request.invalid_parameter();
+    }
     write_request.get_status()
 }
 
@@ -159,7 +174,7 @@ unsafe extern "system" fn device_control(
     let mut control_request = DeviceControlRequest::new(irp.as_mut().unwrap());
     let Some(device) = get_device() else {
         control_request.complete();
-        return control_request.get_status();
+        return STATUS_SUCCESS;
     };
 
     let Some(control_code): Option<ControlCode> =
@@ -167,7 +182,7 @@ unsafe extern "system" fn device_control(
     else {
         wdk::info!("Unknown IOCTL code: {}", control_request.get_control_code());
         control_request.not_implemented();
-        return control_request.get_status();
+        return STATUS_NOT_IMPLEMENTED;
     };
 
     wdk::info!("IOCTL: {}", control_code);
@@ -180,5 +195,5 @@ unsafe extern "system" fn device_control(
     };
 
     control_request.complete();
-    control_request.get_status()
+    STATUS_SUCCESS
 }

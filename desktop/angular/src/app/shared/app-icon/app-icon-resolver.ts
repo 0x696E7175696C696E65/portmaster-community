@@ -90,7 +90,7 @@ export class DefaultIconResolver extends AppIconResolver {
     if (!dataURL) {
       throw new Error("invalid data url");
     }
-    const blob = new Blob([dataURL.body], {
+    const blob = new Blob([new Uint8Array(dataURL.body)], {
       type: dataURL.mimeType.essence,
     })
 

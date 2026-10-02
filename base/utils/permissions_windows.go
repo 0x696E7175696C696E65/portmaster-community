@@ -3,6 +3,7 @@
 package utils
 
 import (
+	"fmt"
 	"github.com/hectane/go-acl"
 	"golang.org/x/sys/windows"
 )
@@ -36,7 +37,7 @@ func SetFilePermission(path string, perm FSPermission) error {
 	switch perm {
 	case AdminOnlyPermission, AdminOnlyExecPermission:
 		// Set only admin rights, remove all others.
-		acl.Apply(
+		return acl.Apply(
 			path,
 			true,
 			false,
@@ -45,7 +46,7 @@ func SetFilePermission(path string, perm FSPermission) error {
 		)
 	case PublicReadPermission, PublicReadExecPermission:
 		// Set admin rights and read/execute rights for users, remove all others.
-		acl.Apply(
+		return acl.Apply(
 			path,
 			true,
 			false,
@@ -55,7 +56,7 @@ func SetFilePermission(path string, perm FSPermission) error {
 		)
 	case PublicWritePermission, PublicWriteExecPermission:
 		// Set full control to admin and regular users. Guest users will not have access.
-		acl.Apply(
+		return acl.Apply(
 			path,
 			true,
 			false,
@@ -63,6 +64,7 @@ func SetFilePermission(path string, perm FSPermission) error {
 			acl.GrantSid(windows.GENERIC_ALL|windows.STANDARD_RIGHTS_ALL, adminsSID),
 			acl.GrantSid(windows.GENERIC_ALL|windows.STANDARD_RIGHTS_ALL, usersSID),
 		)
+	default:
+		return fmt.Errorf("unknown file permission: %d", perm)
 	}
-	return nil
 }

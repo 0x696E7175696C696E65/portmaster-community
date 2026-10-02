@@ -5,8 +5,10 @@ import {
   Input, OnChanges, PLATFORM_ID, inject
 } from '@angular/core';
 import { INTEGRATION_SERVICE } from '../integration';
+import { navigationTarget } from '../integration/navigation';
 
 @Directive({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'a[href]'
 })
@@ -29,25 +31,23 @@ export class ExternalLinkDirective implements OnChanges {
 
   @HostListener('click', ['$event'])
   onClick(event: Event) {
+    const destination = navigationTarget(this.href, location.href);
+    if (destination.kind === 'internal') {
+      return;
+    }
     event.preventDefault();
     event.stopPropagation();
-
-    this.integration.openExternal(this.href);
-  }
-
-  ngOnChanges() {
-    this.hrefAttr = this.href;
-
-    if (this.isLinkExternal()) {
-      this.relAttr = 'noopener';
-      this.targetAttr = '_blank';
+    if (destination.kind === 'external') {
+      this.integration.openExternal(destination.url)
+        .catch(() => console.error('Unable to open external link'));
     }
   }
 
-  private isLinkExternal() {
-    return (
-      isPlatformBrowser(this.platformId) &&
-      !this.href.includes(location.hostname)
-    );
+  ngOnChanges() {
+    const kind = isPlatformBrowser(this.platformId)
+      ? navigationTarget(this.href, location.href).kind : 'internal';
+    this.hrefAttr = kind === 'blocked' ? '' : this.href;
+    this.relAttr = kind === 'external' ? 'noopener noreferrer' : '';
+    this.targetAttr = kind === 'external' ? '_blank' : '';
   }
 }

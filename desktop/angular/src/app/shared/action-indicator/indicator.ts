@@ -4,6 +4,7 @@ import { takeUntil } from 'rxjs/operators';
 import { ActionIndicatorRef, ACTION_REF } from './action-indicator.service';
 
 @Component({
+  standalone: false,
   templateUrl: './indicator.html',
   styleUrls: ['./indicator.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,7 +58,7 @@ export class IndicatorComponent implements OnInit {
     this.ref.close();
   }
 
-  @HostListener('@slideIn.done', ['$event'])
+  @HostListener('@slideIn.done')
   onAnimationDone() {
     if (this.state === 'replace') {
       this.ref.close();

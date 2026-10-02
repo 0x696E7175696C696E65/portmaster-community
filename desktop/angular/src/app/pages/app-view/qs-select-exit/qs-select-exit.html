@@ -27,7 +27,7 @@
   </sfng-select>
 
   <ng-template *ngIf="canUse && spnEnabled === true && exitRuleSetting === null">
-    <fa-icon icon="spinner" [spin]="true"></fa-icon>
+    <fa-icon icon="spinner" animation="spin"></fa-icon>
   </ng-template>
 
   <span *ngIf="canUse && spnEnabled === false"

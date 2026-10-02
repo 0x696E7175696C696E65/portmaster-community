@@ -4,6 +4,7 @@ import { MetaAPI } from "@safing/portmaster-api";
 import { Subject, takeUntil } from "rxjs";
 
 @Component({
+  standalone: false,
   templateUrl: './intro.component.html',
   styles: [
     `

@@ -36,6 +36,7 @@ const bandwidthSorts: SortTypes[] = [
 ]
 
 @Component({
+  standalone: false,
   selector: 'app-network-scout',
   templateUrl: './network-scout.html',
   styleUrls: ['./network-scout.scss'],

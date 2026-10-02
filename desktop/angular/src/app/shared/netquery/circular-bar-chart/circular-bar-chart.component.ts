@@ -54,6 +54,7 @@ export function splitQueryResult<T extends QueryResult, K extends keyof T>(resul
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-circular-bar-chart',
   template: '',
   changeDetection: ChangeDetectionStrategy.OnPush

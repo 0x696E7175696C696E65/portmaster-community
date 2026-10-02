@@ -13,6 +13,7 @@ import { StepOutletComponent, STEP_ANIMATION_DIRECTION, STEP_PORTAL } from "./st
 export const STEP_CONFIG = new InjectionToken<StepperConfig>('StepperConfig');
 
 @Component({
+  standalone: false,
   templateUrl: './overlay-stepper-container.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [

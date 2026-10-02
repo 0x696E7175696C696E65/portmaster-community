@@ -9,8 +9,6 @@ import (
 	"runtime"
 )
 
-const isWindows = runtime.GOOS == "windows"
-
 // EnsureDirectory ensures that the given directory exists and that is has the given permissions set.
 // If path is a file, it is deleted and a directory created.
 func EnsureDirectory(path string, perm FSPermission) error {
@@ -24,11 +22,9 @@ func EnsureDirectory(path string, perm FSPermission) error {
 		// file exists
 		if f.IsDir() {
 			// directory exists, check permissions
-			if isWindows {
-				// Ignore windows permission error. For none admin users it will always fail.
-				_ = SetFilePermission(path, perm)
-				return nil
-			} else if f.Mode().Perm() != perm.AsUnixPermission() {
+			// Windows ACLs cannot be inferred from Mode().Perm(). Fail if the
+			// requested policy cannot be installed instead of reporting success.
+			if runtime.GOOS == "windows" || f.Mode().Perm() != perm.AsUnixPermission() {
 				return SetFilePermission(path, perm)
 			}
 			return nil
@@ -45,12 +41,7 @@ func EnsureDirectory(path string, perm FSPermission) error {
 			return fmt.Errorf("could not create dir %s: %w", path, err)
 		}
 		// Set permissions.
-		err = SetFilePermission(path, perm)
-		// Ignore windows permission error. For none admin users it will always fail.
-		if !isWindows {
-			return err
-		}
-		return nil
+		return SetFilePermission(path, perm)
 	}
 	// other error opening path
 	return fmt.Errorf("failed to access %s: %w", path, err)

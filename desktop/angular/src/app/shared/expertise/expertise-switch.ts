@@ -3,6 +3,7 @@ import { ExpertiseLevel } from '@safing/portmaster-api';
 import { ExpertiseService } from './expertise.service';
 
 @Component({
+  standalone: false,
   selector: 'app-expertise',
   templateUrl: './expertise-switch.html',
   styleUrls: ['./expertise-switch.scss']

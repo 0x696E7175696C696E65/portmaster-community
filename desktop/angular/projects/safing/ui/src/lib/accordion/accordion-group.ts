@@ -4,6 +4,7 @@ import { Subscription } from 'rxjs';
 import { SfngAccordionComponent } from './accordion';
 
 @Component({
+  standalone: false,
   selector: 'sfng-accordion-group',
   templateUrl: './accordion-group.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -24,7 +24,7 @@ import (
 )
 
 // MaxUnpackSize defines the maximum size that is allowed to be unpacked.
-const MaxUnpackSize = 1 << 30 // 2^30 == 1GB
+const MaxUnpackSize = 256 << 20 // 256 MiB
 
 const currentPlatform = runtime.GOOS + "_" + runtime.GOARCH
 
@@ -448,13 +448,16 @@ func copyAndCheckSHA256Sum(src, dst, sha256sum string, filePermission utils.FSPe
 	if err != nil {
 		return fmt.Errorf("write temp dst file: %w", err)
 	}
+	// Install the ACL before the file becomes an active update resource.
+	if err := utils.SetFilePermission(tmpDst, filePermission); err != nil {
+		_ = os.Remove(tmpDst)
+		return fmt.Errorf("protect copied artifact: %w", err)
+	}
 
 	// Rename/Move to actual location.
 	err = os.Rename(tmpDst, dst)
 	if err != nil {
 		return fmt.Errorf("rename dst file after write: %w", err)
 	}
-	utils.SetFilePermission(dst, filePermission)
-
 	return nil
 }

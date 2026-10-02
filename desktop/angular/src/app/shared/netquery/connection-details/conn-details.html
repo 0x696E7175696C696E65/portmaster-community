@@ -13,7 +13,7 @@
         {{ conn.ended | date:'medium'}}
       </span>
       <span *ngIf="!conn.ended">
-        <fa-icon icon="spinner" [spin]="true"></fa-icon>
+        <fa-icon icon="spinner" animation="spin"></fa-icon>
       </span>
     </span>
 

@@ -6,6 +6,7 @@ import { catchError, filter, throwError } from 'rxjs';
 
 
 @Component({
+  standalone: false,
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],

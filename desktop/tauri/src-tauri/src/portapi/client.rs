@@ -34,6 +34,27 @@ pub struct PortAPI {
 /// The map type used to store message subscribers.
 type SubscriberMap = RwLock<HashMap<usize, Sender<Response>>>;
 
+fn portapi_text(message: &tokio_websockets::Message) -> Option<&str> {
+    if !message.is_text() {
+        return None;
+    }
+    std::str::from_utf8(message.as_payload()).ok()
+}
+
+#[cfg(test)]
+mod frame_tests {
+    use super::portapi_text;
+    use bytes::Bytes;
+    use tokio_websockets::Message;
+
+    #[test]
+    fn binary_frame_cannot_be_interpreted_as_unchecked_utf8() {
+        assert!(portapi_text(&Message::binary(Bytes::from_static(&[0xff, 0xfe]))).is_none());
+        assert!(portapi_text(&Message::binary(Bytes::from_static(b"1|ok"))).is_none());
+        assert_eq!(portapi_text(&Message::text("1|ok")), Some("1|ok"));
+    }
+}
+
 /// Connect to PortAPI at the specified URI.
 ///
 /// This method will launch a new async thread on the `tauri::async_runtime`
@@ -114,8 +135,11 @@ pub async fn connect(uri: &str) -> Result<PortAPI, Error> {
                                 continue;
                             }
                             
-                            let text = unsafe {
-                                std::str::from_utf8_unchecked(msg.as_payload())
+                            // Binary frames may contain arbitrary bytes. Treating them as
+                            // unchecked UTF-8 creates an invalid str and undefined behavior.
+                            let Some(text) = portapi_text(&msg) else {
+                                warn!("ignoring non-text or invalid UTF-8 PortAPI frame");
+                                continue;
                             };
 
                             match text.parse::<Message>() {

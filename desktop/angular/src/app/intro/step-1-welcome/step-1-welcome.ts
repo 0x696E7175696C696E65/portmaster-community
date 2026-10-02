@@ -3,6 +3,7 @@ import { Step, StepRef, STEP_REF } from "@safing/ui";
 import { of } from "rxjs";
 
 @Component({
+  standalone: false,
   templateUrl: './step-1-welcome.html',
   styleUrls: ['../step.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -1,11 +1,16 @@
 import { BrowserIntegrationService } from "./browser";
 import { AppInfo, PortmasterDir, ProcessInfo } from "./integration";
+import { navigationTarget } from './navigation';
 
 export class ElectronIntegrationService extends BrowserIntegrationService {
 
   openExternal(pathOrUrl: string): Promise<void> {
+    const destination = navigationTarget(pathOrUrl, location.href);
+    if (destination.kind !== 'external') {
+      return Promise.reject(new Error('External links must use HTTP or HTTPS'));
+    }
     if (!!window.app) {
-      return window.app.openExternal(pathOrUrl);
+      return window.app.openExternal(destination.url);
     }
 
     return Promise.reject('No electron API available')

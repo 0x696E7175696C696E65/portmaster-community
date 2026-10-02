@@ -3,6 +3,7 @@ import { ExpertiseLevel, NetqueryConnection } from "@safing/portmaster-api";
 
 
 @Pipe({
+  standalone: false,
   name: "canShowConnection",
   pure: true,
 })

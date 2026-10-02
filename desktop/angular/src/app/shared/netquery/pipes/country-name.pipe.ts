@@ -47,6 +47,7 @@ export class CountryNameService {
 }
 
 @Pipe({
+  standalone: false,
   name: 'countryName',
   pure: true,
 })

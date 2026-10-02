@@ -2,8 +2,19 @@
 
 package proxy
 
-import "net"
+import (
+	"fmt"
+	"net"
+	"syscall"
+)
 
-// applyBindToDevice is a no-op on non-Linux platforms; SO_BINDTODEVICE is a
-// Linux-specific socket option and has no equivalent here.
-func applyBindToDevice(_ *net.Dialer, _ string) {}
+// An unsupported platform must refuse a selected interface rather than
+// silently sending privacy-sensitive traffic over its default route.
+func applyBindToDevice(d *net.Dialer, iface string) {
+	if iface == "" {
+		return
+	}
+	d.Control = func(_, _ string, _ syscall.RawConn) error {
+		return fmt.Errorf("interface binding is unsupported on this platform: %q", iface)
+	}
+}

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, Input, OnChanges } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-count-indicator',
   templateUrl: './count-indicator.html',
   styleUrls: ['./count-indicator.scss'],

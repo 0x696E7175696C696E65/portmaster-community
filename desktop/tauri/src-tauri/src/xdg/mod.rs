@@ -1,5 +1,5 @@
 use cached::proc_macro::once;
-use dataurl::DataUrl;
+use base64::{engine::general_purpose::STANDARD, Engine};
 use gdk_pixbuf::{Pixbuf, PixbufError};
 use gtk_sys::{
     gtk_icon_info_free, gtk_icon_info_get_filename, gtk_icon_theme_get_default,
@@ -482,12 +482,7 @@ fn read_and_convert_pixbuf(result: String) -> std::result::Result<String, glib::
     match pixbuf {
         Ok(data) => match data.save_to_bufferv("png", &[]) {
             Ok(data) => {
-                let mut du = DataUrl::new();
-
-                du.set_media_type(Some("image/png".to_string()));
-                du.set_data(&data);
-
-                Ok(du.to_string())
+                Ok(format!("data:image/png;base64,{}", STANDARD.encode(&data)))
             }
             Err(err) => Err(glib::Error::new(
                 PixbufError::Failed,

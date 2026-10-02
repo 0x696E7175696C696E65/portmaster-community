@@ -12,6 +12,24 @@ use crate::{portmaster::PortmasterExt, traymenu};
 const LIGHT_PM_ICON: &[u8] = include_bytes!("../../../../assets/data/icons/pm_light_512.png");
 const DARK_PM_ICON: &[u8] = include_bytes!("../../../../assets/data/icons/pm_dark_512.png");
 
+/// Keep untrusted sites out of the privileged application webview. Help
+/// links are opened by the scoped shell plugin in the system browser.
+fn trusted_ui_navigation(url: &url::Url) -> bool {
+    if !url.username().is_empty() || url.password().is_some() {
+        return false;
+    }
+    match (url.scheme(), url.host_str(), url.port()) {
+        ("tauri", Some("localhost"), None) => true,
+        ("http" | "https", Some("tauri.localhost"), None) => true,
+        ("http", Some("127.0.0.1"), Some(817)) => {
+            url.path() == "/" || url.path().starts_with("/ui/")
+        }
+        #[cfg(debug_assertions)]
+        ("http", Some("localhost" | "127.0.0.1"), Some(4100 | 4200)) => true,
+        _ => false,
+    }
+}
+
 // Windows only, see `do_before_any_window_create`.
 #[cfg(target_os = "windows")]
 const CUSTOM_ENVVAR_FOR_WEBVIEW_PROCESS: &str = "PORTMASTER_UI_WEBVIEW_PROCESS";
@@ -48,11 +66,7 @@ pub fn create_main_window(app: &AppHandle) -> Result<WebviewWindow> {
             })
             .on_navigation(|url| {
                 debug!("[tauri] main window navigation event: {}", url);
-                if url.as_str() == "about:blank" {
-                    debug!("[tauri] blocking navigation to about:blank");
-                    return false;
-                }
-                true
+                trusted_ui_navigation(url)
             })
             .build();
 
@@ -111,6 +125,7 @@ pub fn create_splash_window(app: &AppHandle) -> Result<WebviewWindow> {
 
         do_before_any_window_create(); // required operations before window creation
         let window = WebviewWindowBuilder::new(app, "splash", WebviewUrl::App("index.html".into()))
+            .on_navigation(trusted_ui_navigation)
             .center()
             .closable(false)
             .focused(true)
@@ -254,7 +269,10 @@ pub fn may_navigate_to_ui(win: &mut WebviewWindow, force: bool) {
         if let Ok(target_url) = std::env::var("TAURI_PM_URL") {
             debug!("[tauri] navigating to {}", target_url);
 
-            _ = win.navigate(target_url.parse().unwrap());
+            match target_url.parse() {
+                Ok(url) if trusted_ui_navigation(&url) => { _ = win.navigate(url); }
+                _ => error!("refusing untrusted TAURI_PM_URL"),
+            }
 
             return;
         }
@@ -279,6 +297,28 @@ pub fn may_navigate_to_ui(win: &mut WebviewWindow, force: bool) {
             "not navigating to user interface: current url: {}",
             win.url().unwrap().as_str()
         );
+    }
+}
+
+#[cfg(test)]
+mod navigation_tests {
+    use super::trusted_ui_navigation;
+
+    #[test]
+    fn privileged_webview_rejects_external_and_non_ui_pages() {
+        for raw in [
+            "https://attacker.test/", "file:///C:/Windows/system.ini",
+            "http://127.0.0.1:817.attacker.test/ui/",
+            "http://127.0.0.1:817@attacker.test/ui/",
+            "http://attacker@127.0.0.1:817/ui/",
+            "http://127.0.0.1:817/api/v1/core/status",
+            "http://127.0.0.1:818/ui/", "about:blank",
+        ] {
+            assert!(!raw.parse().is_ok_and(|url| trusted_ui_navigation(&url)), "accepted {raw}");
+        }
+        for raw in ["tauri://localhost/index.html", "http://tauri.localhost/index.html", "http://127.0.0.1:817/", "http://127.0.0.1:817/ui/modules/portmaster/#/dashboard"] {
+            assert!(trusted_ui_navigation(&raw.parse().unwrap()), "rejected {raw}");
+        }
     }
 }
 

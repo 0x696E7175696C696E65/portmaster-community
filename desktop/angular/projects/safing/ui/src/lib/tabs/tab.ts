@@ -17,6 +17,7 @@ export const TAB_SCROLL_HANDLER = new InjectionToken<(_: Event) => void>('TAB_SC
  * Structural directive (*sfngTabContent) to defined lazy-loaded tab content.
  */
 @Directive({
+  standalone: false,
   selector: '[sfngTabContent]',
 })
 export class SfngTabContentDirective<T> {
@@ -36,6 +37,7 @@ export class SfngTabContentDirective<T> {
  * The content of the tab is lazy-loaded by using the TabContentDirective.
  */
 @Component({
+  standalone: false,
   selector: 'sfng-tab',
   template: '<ng-content></ng-content>',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -87,6 +89,7 @@ export class SfngTabComponent implements ListKeyManagerOption {
  * move animations.
  */
 @Component({
+  standalone: false,
   selector: 'sfng-tab-outlet',
   template: `
     <div [@moveInOut]="{value: _appAnimate, params: {in: in, out: out}}" class="flex flex-col overflow-auto {{ outletClass }}" (scroll)="onTabContentScroll($event)">

@@ -10,7 +10,6 @@ import {
   SkipSelf,
   inject,
 } from '@angular/core';
-import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import {
   AppProfileService,
   PORTMASTER_HTTP_API_ENDPOINT,
@@ -60,6 +59,7 @@ const iconIDsToIgnore = [
 const profilesToIgnore = ['local/_unidentified', 'local/_unsolicited'];
 
 @Component({
+  standalone: false,
   selector: 'app-icon',
   templateUrl: './app-icon.html',
   styleUrls: ['./app-icon.scss'],
@@ -72,7 +72,7 @@ export class AppIconComponent implements OnInit, OnDestroy {
   private resovler = inject(AppIconResolver);
 
   /** @private The data-URL for the app-icon if available */
-  src: SafeUrl | string = '';
+  src: string = '';
 
   /** The profile for which to show the app-icon */
   @Input()
@@ -121,7 +121,6 @@ export class AppIconComponent implements OnInit, OnDestroy {
     // Since we want the background color to change immediately after we set the
     // src path we need to tell the parent (which ever it is) to update as wel.
     @SkipSelf() private parentCdr: ChangeDetectorRef,
-    private sanitzier: DomSanitizer,
     @Inject(PORTMASTER_HTTP_API_ENDPOINT) private httpAPI: string
   ) { }
 
@@ -292,7 +291,7 @@ export class AppIconComponent implements OnInit, OnDestroy {
             icon = '';
           }
           if (icon !== '') {
-            this.src = this.sanitzier.bypassSecurityTrustUrl(icon);
+            this.src = icon;
             this.color = 'unset';
           } else {
             this.src = '';

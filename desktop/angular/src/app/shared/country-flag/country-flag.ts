@@ -1,11 +1,11 @@
 import { AfterViewInit, Directive, ElementRef, HostBinding, Input, OnChanges, Renderer2, SimpleChanges } from '@angular/core';
 
 @Directive({
+  standalone: false,
   selector: 'span[appCountryFlags]',
 })
 export class CountryFlagDirective implements AfterViewInit, OnChanges {
   private readonly flagDir = "/assets/img/flags/";
-  private readonly OFFSET = 127397;
 
   @HostBinding('style.text-shadow')
   textShadow = 'rgba(255, 255, 255, .5) 0px 0px 1px';
@@ -30,10 +30,18 @@ export class CountryFlagDirective implements AfterViewInit, OnChanges {
 
   private update() {
     const span = this.el.nativeElement as HTMLSpanElement;
-    const flag = this.toUnicodeFlag(this.appCountryFlags);
+    const code = typeof this.appCountryFlags === 'string' ? this.appCountryFlags.toUpperCase() : '';
+    const validCode = /^(?:[A-Z]{2}|__)$/.test(code);
+    const flag = validCode && code !== '__' ? this.toUnicodeFlag(code) : '🌐';
     this.renderer.setAttribute(span, 'data-before', flag);
-
-    span.innerHTML = `<img style="display: inline" src="${this.flagDir}${this.appCountryFlags.toLocaleUpperCase()}.png">`;
+    span.replaceChildren();
+    if (validCode) {
+      const image = span.ownerDocument.createElement('img');
+      image.style.display = 'inline';
+      image.src = `${this.flagDir}${code}.png`;
+      image.alt = code === '__' ? 'Anycast' : code;
+      span.appendChild(image);
+    }
   }
 
   private toUnicodeFlag(code: string) {

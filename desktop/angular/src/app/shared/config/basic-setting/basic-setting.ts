@@ -5,6 +5,7 @@ import { AbstractControl, ControlValueAccessor, NgModel, NG_VALIDATORS, NG_VALUE
 import { BaseSetting, ExternalOptionHint, OptionType, parseSupportedValues, SettingValueType, WellKnown } from '@safing/portmaster-api';
 
 @Component({
+  standalone: false,
   selector: 'app-basic-setting',
   templateUrl: './basic-setting.html',
   styleUrls: ['./basic-setting.scss'],

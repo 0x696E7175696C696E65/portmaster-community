@@ -11,6 +11,7 @@ import { ExitService } from 'src/app/shared/exit-screen';
 import { TauriIntegrationService } from 'src/app/integration/taur-app';
 
 @Component({
+  standalone: false,
   selector: 'app-navigation',
   templateUrl: './navigation.html',
   styleUrls: ['./navigation.scss'],

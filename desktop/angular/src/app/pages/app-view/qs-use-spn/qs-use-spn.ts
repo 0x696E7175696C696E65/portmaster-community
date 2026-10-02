@@ -8,6 +8,7 @@ const interferingSettingsWhenOn = [
 ]
 
 @Component({
+  standalone: false,
   selector: 'app-qs-use-spn',
   templateUrl: './qs-use-spn.html',
   changeDetection: ChangeDetectionStrategy.OnPush

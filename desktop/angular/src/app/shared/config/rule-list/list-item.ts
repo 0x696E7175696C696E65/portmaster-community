@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Ho
 import { fadeInAnimation, fadeOutAnimation } from '../../animations';
 
 @Component({
+  standalone: false,
   selector: 'app-rule-list-item',
   templateUrl: 'list-item.html',
   styleUrls: ['list-item.scss'],

@@ -11,6 +11,7 @@ export interface SfngTagbarValue {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-tagbar',
   templateUrl: 'tag-bar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ContentChildren,
 import { SfngDropdownComponent } from '@safing/ui';
 
 @Component({
+  standalone: false,
   selector: 'app-menu-trigger',
   templateUrl: './menu-trigger.html',
   styleUrls: ['./menu-trigger.scss'],
@@ -45,6 +46,7 @@ export class MenuTriggerComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-menu-item',
   template: '<ng-content></ng-content>',
   styleUrls: ['./menu-item.scss'],
@@ -80,6 +82,7 @@ export class MenuItemComponent {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-menu-group',
   template: '<ng-content></ng-content>',
   styleUrls: ['./menu-group.scss'],
@@ -88,6 +91,7 @@ export class MenuItemComponent {
 export class MenuGroupComponent { }
 
 @Component({
+  standalone: false,
   selector: 'app-menu',
   exportAs: 'appMenu',
   templateUrl: './menu.html',

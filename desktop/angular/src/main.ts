@@ -1,4 +1,4 @@
-import { enableProdMode, importProvidersFrom } from '@angular/core';
+import { enableProdMode, importProvidersFrom, provideZoneChangeDetection } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 
 import { AppModule } from './app/app.module';
@@ -12,6 +12,7 @@ import { provideRouter } from '@angular/router';
 import { PortmasterAPIModule } from '@safing/portmaster-api';
 import { NotificationsService } from './app/services';
 import { TauriIntegrationService } from './app/integration/taur-app';
+import { navigationTarget } from './app/integration/navigation';
 
 if (environment.production) {
   enableProdMode();
@@ -27,11 +28,6 @@ if (typeof (CSS as any)['registerProperty'] === 'function') {
 }
 
 function handleExternalResources(e: Event) {
-  // TODO: 
-  //    This code executes "openExternal()" when any "<a />" element in the app is clicked.
-  //    This could potentially be a security issue.
-  //    We should consider restricting this to only external links that belong to a certain domain (e.g., https://safing.io).
-  
   // get click target
   let target: HTMLElement | null = e.target as HTMLElement;
     
@@ -41,15 +37,17 @@ function handleExternalResources(e: Event) {
   }
 
   if (!!target) {
-    let href = target.getAttribute("href");
-    if (href?.startsWith("blob")) {
-      return
-    }
-
-    if (!!href && !href.includes(location.hostname)) {
+    const href = target.getAttribute("href");
+    if (href) {
+      const destination = navigationTarget(href, location.href);
+      if (destination.kind === 'internal') {
+        return;
+      }
       e.preventDefault();
-
-      integrationServiceFactory().openExternal(href);
+      if (destination.kind === 'external') {
+        integrationServiceFactory().openExternal(destination.url)
+          .catch(() => console.error('Unable to open external link'));
+      }
     }
   }
 }
@@ -85,6 +83,7 @@ if (location.pathname !== "/prompt") {
   console.log("[INFO] Bootstrapping prompt entry point.");
   bootstrapApplication(PromptEntryPointComponent, {
     providers: [
+      provideZoneChangeDetection(),
       provideHttpClient(),
       importProvidersFrom(PortmasterAPIModule.forRoot({
         websocketAPI: "ws://localhost:817/api/database/v1",

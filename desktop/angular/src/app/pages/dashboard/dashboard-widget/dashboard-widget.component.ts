@@ -2,6 +2,7 @@ import { coerceBooleanProperty } from "@angular/cdk/coercion";
 import { ChangeDetectionStrategy, Component, Input } from "@angular/core";
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard-widget',
   templateUrl: './dashboard-widget.component.html',
   styles: [

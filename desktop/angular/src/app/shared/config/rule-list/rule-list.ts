@@ -5,6 +5,7 @@ import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { SfngDialogService } from '@safing/ui';
 
 @Component({
+  standalone: false,
   selector: 'app-rule-list',
   templateUrl: './rule-list.html',
   styleUrls: ['./rule-list.scss'],

@@ -57,6 +57,7 @@ export function formatDuration(millis: number, skipDays = false, skipMillis = fa
 }
 
 @Pipe({
+  standalone: false,
   name: 'duration',
   pure: true
 })

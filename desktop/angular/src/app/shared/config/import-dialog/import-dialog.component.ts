@@ -18,6 +18,7 @@ export interface ImportConfig {
 }
 
 @Component({
+  standalone: false,
   templateUrl: './import-dialog.component.html',
   styles: [
     `

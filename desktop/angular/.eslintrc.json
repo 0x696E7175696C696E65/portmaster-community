@@ -34,7 +34,14 @@
             "style": "kebab-case"
           }
         ],
-        "@typescript-eslint/no-explicit-any": "off"
+        "@typescript-eslint/no-explicit-any": "off",
+        "no-restricted-syntax": [
+          "error",
+          {
+            "selector": "CallExpression[callee.property.name=/^bypassSecurityTrust/]",
+            "message": "Preserve Angular sanitization for API, profile and notification content."
+          }
+        ]
       }
     },
     {

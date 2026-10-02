@@ -8,6 +8,7 @@ import { fadeInAnimation } from 'src/app/shared/animations';
 import { SaveSettingEvent } from 'src/app/shared/config/generic-setting/generic-setting';
 
 @Component({
+  standalone: false,
   templateUrl: './settings.html',
   styleUrls: [
     '../page.scss',

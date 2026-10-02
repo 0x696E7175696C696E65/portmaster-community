@@ -5,6 +5,7 @@ import { Action, NotificationState, NotificationsService, getNotificationTypeStr
 import { _Notification } from '../notification-list/notification-list.component';
 
 @Component({
+  standalone: false,
   selector: 'app-notification',
   templateUrl: './notification.html',
   styleUrls: ['./notification.scss'],

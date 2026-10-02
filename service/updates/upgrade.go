@@ -13,6 +13,8 @@ import (
 	"github.com/safing/portmaster/base/utils"
 )
 
+var errUpgradePreparation = errors.New("upgrade preparation failed")
+
 func (u *Updater) upgrade(downloader *Downloader, ignoreVersion bool) error {
 	// Lock index for the upgrade.
 	u.indexLock.Lock()
@@ -42,6 +44,11 @@ func (u *Updater) upgrade(downloader *Downloader, ignoreVersion bool) error {
 	if upgradeError == nil {
 		return nil
 	}
+	if errors.Is(upgradeError, errUpgradePreparation) {
+		// The backup directory may still contain a previous attempt's files.
+		// Do not restore those when this attempt never touched the installation.
+		return fmt.Errorf("upgrade failed before changing active files: %w", upgradeError)
+	}
 
 	// Attempt to recover from failed upgrade.
 	recoveryErr := u.recoverFromFailedUpgrade()
@@ -50,7 +57,7 @@ func (u *Updater) upgrade(downloader *Downloader, ignoreVersion bool) error {
 	}
 
 	// Recovery failed too.
-	return fmt.Errorf("upgrade (including recovery) failed: %w", upgradeError)
+	return fmt.Errorf("upgrade (including recovery) failed: %w", errors.Join(upgradeError, recoveryErr))
 }
 
 func (u *Updater) upgradeMoveFiles(downloader *Downloader) error {
@@ -60,10 +67,12 @@ func (u *Updater) upgradeMoveFiles(downloader *Downloader) error {
 	// In case the files are copied, they are verified in the process.
 
 	// Reset purge directory, so that we can do a clean rollback later.
-	_ = os.RemoveAll(u.cfg.PurgeDirectory)
+	if err := os.RemoveAll(u.cfg.PurgeDirectory); err != nil {
+		return fmt.Errorf("%w: reset purge directory: %w", errUpgradePreparation, err)
+	}
 	err := utils.EnsureDirectory(u.cfg.PurgeDirectory, utils.PublicReadExecPermission)
 	if err != nil {
-		return fmt.Errorf("failed to create purge directory: %w", err)
+		return fmt.Errorf("%w: create purge directory: %w", errUpgradePreparation, err)
 	}
 
 	// Move current version files into purge folder.
@@ -131,11 +140,15 @@ func (u *Updater) upgradeMoveFiles(downloader *Downloader) error {
 
 // moveFile moves a file and falls back to copying if it fails.
 func (u *Updater) moveFile(currentPath, newPath string, sha256sum string, filePermission utils.FSPermission) error {
+	// Apply access controls before moving into the active installation. A
+	// failed ACL must abort the upgrade rather than claim a safe installation.
+	if err := utils.SetFilePermission(currentPath, filePermission); err != nil {
+		return fmt.Errorf("protect artifact before move: %w", err)
+	}
 	// Try to simply move file.
 	err := os.Rename(currentPath, newPath)
 	if err == nil {
 		// Moving was successful, return.
-		utils.SetFilePermission(newPath, filePermission)
 		return nil
 	}
 	log.Tracef("updates/%s: failed to move to %q, falling back to copy+delete: %s", u.cfg.Name, newPath, err)
@@ -158,6 +171,7 @@ func (u *Updater) recoverFromFailedUpgrade() error {
 	}
 
 	// Move all files back to main dir.
+	var recoveryErrors []error
 	for _, file := range files {
 		purgedFile := filepath.Join(u.cfg.PurgeDirectory, file.Name())
 		activeFile := filepath.Join(u.cfg.Directory, file.Name())
@@ -165,10 +179,11 @@ func (u *Updater) recoverFromFailedUpgrade() error {
 		if err != nil {
 			// Only warn and continue to recover as many files as possible.
 			log.Warningf("updates/%s: failed to roll back file %s: %s", u.cfg.Name, file.Name(), err)
+			recoveryErrors = append(recoveryErrors, fmt.Errorf("restore %s: %w", file.Name(), err))
 		}
 	}
 
-	return nil
+	return errors.Join(recoveryErrors...)
 }
 
 func (u *Updater) cleanupAfterUpgrade() error {

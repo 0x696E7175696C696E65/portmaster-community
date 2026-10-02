@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, forwardRef, Host
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 @Component({
+  standalone: false,
   selector: 'sfng-toggle',
   templateUrl: './toggle-switch.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

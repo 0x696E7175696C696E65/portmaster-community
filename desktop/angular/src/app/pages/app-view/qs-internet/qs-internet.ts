@@ -17,6 +17,7 @@ const interferingSettings = {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-qs-internet',
   templateUrl: './qs-internet.html',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -22,6 +22,7 @@ interface BandwidthBarData {
 
 
 @Component({
+  standalone: false,
   selector: 'app-dashboard',
   changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./dashboard.component.scss'],

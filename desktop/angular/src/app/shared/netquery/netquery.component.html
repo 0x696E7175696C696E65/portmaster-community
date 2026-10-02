@@ -123,7 +123,7 @@
     *ngIf="(canUseHistory$ | async)">
     Search History:
     <nz-range-picker [nzShowTime]="false" class="py-0" [nzRenderExtraFooter]="customTimeRange" [(ngModel)]="dateFilter"
-      [nzBorderless]="true" (ngModelChange)="onDateRangeChange($event)" [nzAllowClear]="true" [nzFormat]="dateFormat">
+      nzVariant="borderless" (ngModelChange)="onDateRangeChange($event)" [nzAllowClear]="true" [nzFormat]="dateFormat">
     </nz-range-picker>
 
     <ng-template #customTimeRange>

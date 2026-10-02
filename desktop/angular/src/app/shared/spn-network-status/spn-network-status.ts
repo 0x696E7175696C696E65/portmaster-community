@@ -14,6 +14,7 @@ interface _Issue extends Issue {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-spn-network-status',
   templateUrl: './spn-network-status.html',
   styleUrls: ['./spn-network-status.scss'],

@@ -9,6 +9,7 @@ import { fadeInAnimation, fadeOutAnimation } from '../animations';
 export const OVERLAYREF = new InjectionToken<OverlayRef>('OverlayRef');
 
 @Component({
+  standalone: false,
   templateUrl: './exit-screen.html',
   styleUrls: ['./exit-screen.scss'],
   animations: [

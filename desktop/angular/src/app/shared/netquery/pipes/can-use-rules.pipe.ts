@@ -15,6 +15,7 @@ let optionKeys = new Set([
 ])
 
 @Pipe({
+  standalone: false,
   name: "canUseRules",
   pure: true,
 })

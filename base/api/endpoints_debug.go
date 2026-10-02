@@ -39,7 +39,7 @@ func registerDebugEndpoints() error {
 
 	if err := RegisterEndpoint(Endpoint{
 		Path:        "debug/stack",
-		Read:        PermitAnyone,
+		Read:        PermitUser,
 		DataFunc:    getStack,
 		Name:        "Get Goroutine Stack",
 		Description: "Returns the current goroutine stack.",
@@ -49,7 +49,7 @@ func registerDebugEndpoints() error {
 
 	if err := RegisterEndpoint(Endpoint{
 		Path:        "debug/stack/print",
-		Read:        PermitAnyone,
+		Read:        PermitUser,
 		ActionFunc:  printStack,
 		Name:        "Print Goroutine Stack",
 		Description: "Prints the current goroutine stack to stdout.",
@@ -60,7 +60,7 @@ func registerDebugEndpoints() error {
 	if err := RegisterEndpoint(Endpoint{
 		Path:     "debug/cpu",
 		MimeType: "application/octet-stream",
-		Read:     PermitAnyone,
+		Read:     PermitUser,
 		DataFunc: handleCPUProfile,
 		Name:     "Get CPU Profile",
 		Description: strings.ReplaceAll(`Gather and return the CPU profile.
@@ -82,7 +82,7 @@ You can easily view this data in your browser with this command (with Go install
 	if err := RegisterEndpoint(Endpoint{
 		Path:     "debug/heap",
 		MimeType: "application/octet-stream",
-		Read:     PermitAnyone,
+		Read:     PermitUser,
 		DataFunc: handleHeapProfile,
 		Name:     "Get Heap Profile",
 		Description: strings.ReplaceAll(`Gather and return the heap memory profile.
@@ -97,7 +97,7 @@ You can easily view this data in your browser with this command (with Go install
 	if err := RegisterEndpoint(Endpoint{
 		Path:     "debug/allocs",
 		MimeType: "application/octet-stream",
-		Read:     PermitAnyone,
+		Read:     PermitUser,
 		DataFunc: handleAllocsProfile,
 		Name:     "Get Allocs Profile",
 		Description: strings.ReplaceAll(`Gather and return the memory allocation profile.
@@ -111,7 +111,7 @@ You can easily view this data in your browser with this command (with Go install
 
 	if err := RegisterEndpoint(Endpoint{
 		Path:        "debug/info",
-		Read:        PermitAnyone,
+		Read:        PermitUser,
 		DataFunc:    debugInfo,
 		Name:        "Get Debug Information",
 		Description: "Returns debugging information, including the version and platform info, errors, logs and the current goroutine stack.",
@@ -135,7 +135,7 @@ func ping(ar *Request) (msg string, err error) {
 
 // ready checks if Portmaster has completed starting.
 func ready(ar *Request) (msg string, err error) {
-	if module.instance.Ready() {
+	if !module.instance.Ready() {
 		return "", ErrorWithStatus(errors.New("portmaster is not ready, reload (F5) to try again"), http.StatusTooEarly)
 	}
 	return "Portmaster is ready.", nil
@@ -176,6 +176,9 @@ func handleCPUProfile(ar *Request) (data []byte, err error) {
 			return nil, fmt.Errorf("failed to parse duration: %w", err)
 		}
 		duration = parsedDuration
+	}
+	if duration <= 0 || duration > time.Minute {
+		return nil, ErrorWithStatus(errors.New("CPU profiling duration must be greater than zero and at most 1m"), http.StatusBadRequest)
 	}
 
 	// Indicate download and filename.

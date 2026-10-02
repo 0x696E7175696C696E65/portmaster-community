@@ -4,7 +4,7 @@ Open the application's Tor and WireGuard page for setup steps. Enable **Split Tu
 
 ## Tor
 
-Run a local Tor daemon. Set the application's Network Interface to `tor` for `127.0.0.1:9050`, or `tor://127.0.0.1:9150` for an explicit SOCKS port. Only literal loopback IPs and valid ports are accepted. Selected TCP connections use the SOCKS proxy; selected UDP connections are rejected. Proxy connection failure has no direct TCP fallback. These guarantees cover the proxy path, not every protocol or system DNS query.
+Run a local Tor daemon. Set the application's Network Interface to `tor` for `127.0.0.1:9050`, or `tor://127.0.0.1:9150` for an explicit SOCKS port. Only literal loopback IPs and valid ports are accepted. Selected TCP connections use the SOCKS proxy; selected UDP connections are rejected. A stalled SOCKS handshake times out, and proxy failure has no direct TCP fallback. Selected unsupported outbound protocols such as ICMP are blocked after routing exclusions are evaluated. System DNS queries remain outside this proxy path.
 
 DNS uses Portmaster's configured resolver separately. Onion names, circuit isolation, and Tor Browser fingerprint protection are not implemented. Other applications do not inherit Tor Browser protections by using this proxy. History remains local and can contain sensitive destinations.
 

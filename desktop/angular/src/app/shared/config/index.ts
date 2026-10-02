@@ -5,4 +5,3 @@ export * from './filter-lists';
 export * from './generic-setting';
 export * from './ordererd-list';
 export * from './rule-list';
-export * from './safe.pipe';

@@ -10,6 +10,7 @@ import { SfngTooltipComponent, SFNG_TOOLTIP_CONTENT, SFNG_TOOLTIP_OVERLAY } from
 export type SfngTooltipPosition = 'left' | 'right' | 'bottom' | 'top';
 
 @Directive({
+  standalone: false,
   selector: '[sfng-tooltip],[snfgTooltip]',
 })
 export class SfngTooltipDirective implements OnInit, OnDestroy, OnChanges {
@@ -76,8 +77,12 @@ export class SfngTooltipDirective implements OnInit, OnDestroy, OnChanges {
 
   /** The actual content that should be displayed in the tooltip overlay. */
   @Input('sfngTooltip')
-  @Input('sfng-tooltip')
   tooltipContent: string | TemplateRef<any> | null = null;
+
+  @Input('sfng-tooltip')
+  set tooltipContentAlias(value: string | TemplateRef<any> | null) {
+    this.tooltipContent = value;
+  }
 
   @Input('snfgTooltipPosition')
   position: ConnectedPosition | SfngTooltipPosition | (SfngTooltipPosition | ConnectedPosition)[] | 'any' = 'any';

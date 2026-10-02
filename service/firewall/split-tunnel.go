@@ -24,9 +24,6 @@ func checkSplitTunneling(ctx context.Context, conn *network.Connection) {
 	case conn.Verdict != network.VerdictAccept:
 		// Connection will be blocked.
 		return
-	case conn.IPProtocol != packet.TCP && conn.IPProtocol != packet.UDP:
-		// Unsupported protocol.
-		return
 	case conn.Process().Pid == ownPID:
 		// Bypass tunneling for own connections.
 		return
@@ -73,6 +70,10 @@ func checkSplitTunneling(ctx context.Context, conn *network.Connection) {
 	case endpoints.Permitted, endpoints.NoMatch:
 	}
 
+	if !enforceSplitTunnelProtocol(conn) {
+		return
+	}
+
 	if !splittun.IsReady() {
 		conn.Failed("selected routing module is unavailable", profile.CfgOptionSplitTunUseKey)
 		return
@@ -81,6 +82,17 @@ func checkSplitTunneling(ctx context.Context, conn *network.Connection) {
 	conn.SaveWhenFinished()
 
 	conn.SetVerdictDirectly(network.VerdictRerouteToSplitTun)
+}
+
+// enforceSplitTunnelProtocol is called only after application routing and
+// explicit destination exclusions have been evaluated. Unsupported traffic
+// must be denied, not silently accepted over the default route.
+func enforceSplitTunnelProtocol(conn *network.Connection) bool {
+	if conn.IPProtocol == packet.TCP || conn.IPProtocol == packet.UDP {
+		return true
+	}
+	conn.Failed("selected routing cannot carry this protocol", profile.CfgOptionSplitTunUseKey)
+	return false
 }
 
 func requestSplitTunneling(ctx context.Context, conn *network.Connection) error {

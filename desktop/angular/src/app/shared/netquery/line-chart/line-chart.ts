@@ -113,6 +113,7 @@ export interface SeriesData {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-line-chart',
   styles: [
     `

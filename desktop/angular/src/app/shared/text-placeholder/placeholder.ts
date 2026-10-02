@@ -1,6 +1,7 @@
 import { AfterContentChecked, ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Input } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-text-placeholder',
   template: `
     <span class="text-placeholder" *ngIf="loading">

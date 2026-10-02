@@ -15,6 +15,7 @@ import { Button, HelpTexts, SFNG_TIP_UP_CONTENTS, TipUp } from './translations';
 import { SfngTipUpPlacement, TIPUP_TOKEN } from './utils';
 
 @Directive({
+  standalone: false,
   selector: '[sfngTipUpTrigger]',
 })
 export class SfngsfngTipUpTriggerDirective implements OnDestroy {
@@ -171,6 +172,7 @@ export class SfngsfngTipUpTriggerDirective implements OnDestroy {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-tipup',
   template:
     `<svg viewBox="0 0 24 24"

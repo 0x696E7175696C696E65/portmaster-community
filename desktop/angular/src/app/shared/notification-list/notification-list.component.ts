@@ -16,6 +16,7 @@ export interface _Notification<T = any> extends Notification<T> {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-notification-list',
   templateUrl: './notification-list.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

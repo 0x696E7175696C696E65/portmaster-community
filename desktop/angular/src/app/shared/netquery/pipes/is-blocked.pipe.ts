@@ -2,6 +2,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 import { IsDenied, NetqueryConnection } from '@safing/portmaster-api';
 
 @Pipe({
+  standalone: false,
   name: "isBlocked",
   pure: true
 })

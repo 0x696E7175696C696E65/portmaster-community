@@ -10,6 +10,7 @@ export const SFNG_DIALOG_PORTAL = new InjectionToken<Portal<any>>('SfngDialogPor
 export type SfngDialogState = 'opening' | 'open' | 'closing' | 'closed';
 
 @Component({
+  standalone: false,
   selector: 'sfng-dialog-container',
   template: `
   <div class="container" cdkDrag cdkDragRootElement=".cdk-overlay-pane" [cdkDragDisabled]="!dragable">

@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-should-show"
+description = "Enables the should_show command without any pre-configured scope."
+commands.allow = ["should_show"]
+
+[[permission]]
+identifier = "deny-should-show"
+description = "Denies the should_show command without any pre-configured scope."
+commands.deny = ["should_show"]

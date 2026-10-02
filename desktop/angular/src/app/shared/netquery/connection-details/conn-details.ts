@@ -10,6 +10,7 @@ import { formatDuration } from "../../pipes";
 
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-conn-details',
   styleUrls: ['./conn-details.scss'],
   templateUrl: './conn-details.html',

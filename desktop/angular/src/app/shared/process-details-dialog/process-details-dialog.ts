@@ -5,6 +5,7 @@ import { SfngDialogRef, SfngDialogService, SFNG_DIALOG_REF } from '@safing/ui';
 import { EditProfileDialog } from '../edit-profile-dialog';
 
 @Component({
+  standalone: false,
   selector: 'app-process-details',
   templateUrl: './process-details-dialog.html',
   styleUrls: ['./process-details-dialog.scss'],

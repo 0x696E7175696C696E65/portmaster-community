@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { INTEGRATION_SERVICE } from 'src/app/integration';
 
 @Component({
+  standalone: false,
   selector: 'app-feature-card',
   templateUrl: './feature-card.component.html',
   styleUrls: ['./feature-card.component.scss'],

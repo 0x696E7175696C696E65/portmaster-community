@@ -4,6 +4,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ElementRef, Even
 import { fadeInAnimation, fadeOutAnimation } from '../animations';
 
 @Component({
+  standalone: false,
   selector: 'sfng-dropdown',
   exportAs: 'sfngDropdown',
   templateUrl: './dropdown.html',

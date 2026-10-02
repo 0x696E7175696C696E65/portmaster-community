@@ -43,6 +43,7 @@ interface TreeNode {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-filter-list',
   templateUrl: './filter-list.html',
   styleUrls: ['./filter-list.scss'],

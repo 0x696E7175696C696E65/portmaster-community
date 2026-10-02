@@ -6,6 +6,7 @@ import { fadeInAnimation, fadeOutAnimation } from "../animations";
 import { CountryFlagModule } from 'src/app/shared/country-flag';
 
 @Component({
+  standalone: false,
   selector: 'app-feature-scout',
   templateUrl: './feature-scout.html',
   styleUrls: [

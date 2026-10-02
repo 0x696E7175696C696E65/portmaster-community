@@ -6,6 +6,7 @@ import { catchError, delay, of, tap } from "rxjs";
 import { ActionIndicatorService } from "../action-indicator";
 
 @Component({
+  standalone: false,
   templateUrl: './spn-account-details.html',
   styleUrls: ['./spn-account-details.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,

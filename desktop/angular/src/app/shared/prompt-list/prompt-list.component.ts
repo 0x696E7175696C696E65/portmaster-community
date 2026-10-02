@@ -24,6 +24,7 @@ interface ProfilePrompts extends AppProfile {
 const PromptLimit = 3;
 
 @Component({
+  standalone: false,
   selector: 'app-prompt-list',
   templateUrl: './prompt-list.component.html',
   styleUrls: [

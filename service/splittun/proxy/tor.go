@@ -46,6 +46,13 @@ func dialUpstream(ctx context.Context, dialer *net.Dialer, network, address stri
 	// A separate unbound dialer connects to the local Tor daemon. Never fall
 	// back to a direct connection when SOCKS setup or negotiation fails.
 	forward := &net.Dialer{Timeout: dialer.Timeout}
+	// Dialer.Timeout limits the local TCP connect, but the SOCKS handshake
+	// also needs a deadline. A reachable daemon can accept and then stall.
+	if dialer.Timeout > 0 {
+		var cancel context.CancelFunc
+		ctx, cancel = context.WithTimeout(ctx, dialer.Timeout)
+		defer cancel()
+	}
 	socks, err := xproxy.SOCKS5("tcp", endpoint, nil, forward)
 	if err != nil {
 		return nil, err

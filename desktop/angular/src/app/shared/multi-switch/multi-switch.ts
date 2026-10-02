@@ -8,6 +8,7 @@ import { map, startWith, subscribeOn, take, takeUntil } from 'rxjs/operators';
 import { SwitchItemComponent } from './switch-item';
 
 @Component({
+  standalone: false,
   selector: 'app-multi-switch',
   templateUrl: './multi-switch.html',
   styleUrls: ['./multi-switch.scss'],

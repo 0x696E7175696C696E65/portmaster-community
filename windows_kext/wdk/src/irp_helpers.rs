@@ -5,7 +5,8 @@ use windows_sys::{
         System::SystemServices::IofCompleteRequest,
     },
     Win32::Foundation::{
-        NTSTATUS, STATUS_END_OF_FILE, STATUS_NOT_IMPLEMENTED, STATUS_SUCCESS, STATUS_TIMEOUT,
+        NTSTATUS, STATUS_END_OF_FILE, STATUS_INVALID_PARAMETER, STATUS_NOT_IMPLEMENTED,
+        STATUS_SUCCESS, STATUS_TIMEOUT,
     },
 };
 
@@ -73,10 +74,11 @@ impl ReadRequest<'_> {
             let device_io = (*irp_sp).Parameters.Read;
 
             let system_buffer = irp.AssociatedIrp.SystemBuffer;
-            let buffer = core::slice::from_raw_parts_mut(
-                system_buffer as *mut u8,
-                device_io.Length as usize,
-            );
+            let buffer = if system_buffer.is_null() || device_io.Length == 0 {
+                &mut []
+            } else {
+                core::slice::from_raw_parts_mut(system_buffer as *mut u8, device_io.Length as usize)
+            };
             ReadRequest {
                 irp,
                 buffer,
@@ -136,10 +138,11 @@ impl WriteRequest<'_> {
             let device_io = (*irp_sp).Parameters.Write;
 
             let system_buffer = irp.AssociatedIrp.SystemBuffer;
-            let buffer = core::slice::from_raw_parts_mut(
-                system_buffer as *mut u8,
-                device_io.Length as usize,
-            );
+            let buffer = if system_buffer.is_null() || device_io.Length == 0 {
+                &mut []
+            } else {
+                core::slice::from_raw_parts_mut(system_buffer as *mut u8, device_io.Length as usize)
+            };
             WriteRequest { irp, buffer }
         }
     }
@@ -150,6 +153,11 @@ impl WriteRequest<'_> {
 
     pub fn mark_all_as_read(&mut self) {
         self.irp.IoStatus.Information = self.buffer.len();
+    }
+
+    pub fn invalid_parameter(&mut self) {
+        self.irp.IoStatus.Information = 0;
+        self.irp.IoStatus.Anonymous.Status = STATUS_INVALID_PARAMETER;
     }
 
     pub fn complete(&mut self) {
@@ -192,10 +200,20 @@ impl DeviceControlRequest<'_> {
                 );
 
             let system_buffer = irp.AssociatedIrp.SystemBuffer;
-            let buffer = core::slice::from_raw_parts_mut(
-                system_buffer as *mut u8,
-                device_io.output_buffer_length as usize,
-            );
+            // Only known METHOD_BUFFERED control codes use SystemBuffer for
+            // output. Unknown direct/neither methods can advertise an output
+            // larger than that allocation and must not form a slice over it.
+            let buffer = if device_io.io_control_code & 3 != 0
+                || system_buffer.is_null()
+                || device_io.output_buffer_length == 0
+            {
+                &mut []
+            } else {
+                core::slice::from_raw_parts_mut(
+                    system_buffer as *mut u8,
+                    device_io.output_buffer_length as usize,
+                )
+            };
             DeviceControlRequest {
                 irp,
                 buffer,
@@ -225,12 +243,15 @@ impl DeviceControlRequest<'_> {
     }
 
     pub fn complete(&mut self) {
-        self.irp.IoStatus.Information = self.buffer.len();
+        // The I/O manager copies Information bytes back to user mode. Only
+        // count bytes initialized by write(), never the requested capacity.
+        self.irp.IoStatus.Information = self.fill_index;
         self.irp.IoStatus.Anonymous.Status = STATUS_SUCCESS;
         unsafe { IofCompleteRequest(self.irp, IO_NO_INCREMENT as i8) };
     }
 
     pub fn not_implemented(&mut self) {
+        self.irp.IoStatus.Information = 0;
         self.irp.IoStatus.Anonymous.Status = STATUS_NOT_IMPLEMENTED;
         unsafe { IofCompleteRequest(self.irp, IO_NO_INCREMENT as i8) };
     }

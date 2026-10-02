@@ -8,6 +8,7 @@ export const SFNG_TOOLTIP_CONTENT = new InjectionToken<string | TemplateRef<any>
 export const SFNG_TOOLTIP_OVERLAY = new InjectionToken<OverlayRef>('SFNG_TOOLTIP_OVERLAY');
 
 @Component({
+  standalone: false,
   selector: 'sfng-tooltip-container',
   templateUrl: './tooltip-component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

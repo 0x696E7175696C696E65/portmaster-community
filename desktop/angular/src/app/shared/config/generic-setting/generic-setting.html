@@ -13,7 +13,7 @@
 
   <div class="flex flex-col flex-grow">
     <div class="flex flex-row items-center justify-start space-x-2 w-fit" *ngIf="showHeader">
-      <h3 [innerHTML]="setting?.Name | safe:'html'" class="mb-0 name"></h3>
+      <h3 class="mb-0 name">{{ setting?.Name }}</h3>
       <sfng-tipup *ngIf="setting?.Description" [key]="setting!.Key" [text]="setting?.Description"
         [buttons]="sfngTipUpButtons" [title]="setting?.Name"></sfng-tipup>
 

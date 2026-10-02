@@ -12,6 +12,7 @@ interface SecurityOption {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-security-lock',
   templateUrl: './security-lock.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

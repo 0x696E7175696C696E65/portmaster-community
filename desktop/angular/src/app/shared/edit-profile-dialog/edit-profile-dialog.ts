@@ -25,6 +25,7 @@ import { Observable, Subject, map, of, switchMap, takeUntil } from 'rxjs';
 import { ActionIndicatorService } from 'src/app/shared/action-indicator';
 
 @Component({
+  standalone: false,
   templateUrl: './edit-profile-dialog.html',
   //changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./edit-profile-dialog.scss'],

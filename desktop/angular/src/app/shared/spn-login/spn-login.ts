@@ -6,6 +6,7 @@ import { catchError, finalize, of } from "rxjs";
 import { ActionIndicatorService } from "../action-indicator";
 
 @Component({
+  standalone: false,
   selector: 'app-spn-login',
   templateUrl: './spn-login.html',
   styleUrls: ['./spn-login.scss'],

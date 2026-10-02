@@ -9,6 +9,7 @@ interface ProfileAttachedConnection extends NetqueryConnection {
 }
 
 @Component({
+  standalone: false,
   selector: 'sfng-netquery-connection-row',
   templateUrl: './conn-row.html',
   styleUrls: [

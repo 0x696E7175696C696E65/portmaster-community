@@ -3,6 +3,7 @@ import { SfngTabComponent, SfngTabGroupComponent } from '@safing/ui';
 import { filter, interval, startWith, Subscription } from 'rxjs';
 
 @Component({
+  standalone: false,
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'spn-feature-carousel',
   changeDetection: ChangeDetectionStrategy.OnPush,

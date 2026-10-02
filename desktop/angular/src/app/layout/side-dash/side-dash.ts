@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-side-dash',
   templateUrl: './side-dash.html',
   styleUrls: ['./side-dash.scss'],

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostBinding } from '@angular/core';
 
 @Component({
+  standalone: false,
   selector: 'app-loading',
   templateUrl: './loading.html',
   styleUrls: ['./loading.scss'],

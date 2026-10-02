@@ -75,10 +75,6 @@ type DatabaseWebsocketAPI struct {
 	conn      *websocket.Conn
 }
 
-func allowAnyOrigin(r *http.Request) bool {
-	return true
-}
-
 // CreateDatabaseAPI creates a new database interface.
 func CreateDatabaseAPI(sendFunction func(data []byte)) DatabaseAPI {
 	return DatabaseAPI{
@@ -93,7 +89,7 @@ func CreateDatabaseAPI(sendFunction func(data []byte)) DatabaseAPI {
 
 func startDatabaseWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
-		CheckOrigin:     allowAnyOrigin,
+		CheckOrigin:     allowedRequestOrigin,
 		ReadBufferSize:  1024,
 		WriteBufferSize: 65536,
 	}
@@ -104,6 +100,9 @@ func startDatabaseWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, errMsg, http.StatusBadRequest)
 		return
 	}
+	// ReadBufferSize only affects the I/O buffer; ReadMessage otherwise accepts
+	// arbitrarily large frames and fragmented messages.
+	wsConn.SetReadLimit(maxAPIRequestBodySize)
 
 	newDBAPI := &DatabaseWebsocketAPI{
 		DatabaseAPI: DatabaseAPI{
@@ -118,14 +117,21 @@ func startDatabaseWebsocketAPI(w http.ResponseWriter, r *http.Request) {
 		conn:      wsConn,
 	}
 
-	newDBAPI.sendBytes = func(data []byte) {
-		newDBAPI.sendQueue <- data
-	}
+	newDBAPI.sendBytes = newDBAPI.enqueue
 
 	module.mgr.Go("database api handler", newDBAPI.handler)
 	module.mgr.Go("database api writer", newDBAPI.writer)
 
 	log.Tracer(r.Context()).Infof("api request: init websocket %s %s", r.RemoteAddr, r.RequestURI)
+}
+
+// enqueue lets pending query/subscription senders exit when their connection
+// closes, including when a slow client has filled the outbound queue.
+func (api *DatabaseWebsocketAPI) enqueue(data []byte) {
+	select {
+	case api.sendQueue <- data:
+	case <-api.shutdownSignal:
+	}
 }
 
 func (api *DatabaseWebsocketAPI) handler(_ *mgr.WorkerCtx) error {

@@ -336,7 +336,7 @@ func checkAPIKey(r *http.Request) *AuthToken {
 	token, ok := apiKeys[key]
 	if !ok {
 		log.Tracer(r.Context()).Tracef(
-			"api: provided api key %s... is unknown", key[:4],
+			"api: provided api key is unknown",
 		)
 		return nil
 	}
@@ -370,16 +370,17 @@ func updateAPIKeys() {
 	validAPIKeys := []string{}
 
 	// Parse new keys.
-	for _, key := range configuredAPIKeys() {
+	for keyIndex, key := range configuredAPIKeys() {
 		u, err := url.Parse(key)
 		if err != nil {
-			log.Errorf("api: failed to parse configured API key %s: %s", key, err)
+			// URL parse errors can include the input, which contains the secret.
+			log.Errorf("api: failed to parse configured API key #%d", keyIndex+1)
 
 			continue
 		}
 
 		if u.Path == "" {
-			log.Errorf("api: malformed API key %s: missing path section", key)
+			log.Errorf("api: malformed API key #%d: missing path section", keyIndex+1)
 
 			continue
 		}
@@ -395,14 +396,14 @@ func updateAPIKeys() {
 		// Parse read permission.
 		readPermission, err := parseAPIPermission(q.Get("read"))
 		if err != nil {
-			log.Errorf("api: invalid API key %s: %s", key, err)
+			log.Errorf("api: invalid read permission for API key #%d", keyIndex+1)
 			continue
 		}
 		token.Read = readPermission
 		// Parse write permission.
 		writePermission, err := parseAPIPermission(q.Get("write"))
 		if err != nil {
-			log.Errorf("api: invalid API key %s: %s", key, err)
+			log.Errorf("api: invalid write permission for API key #%d", keyIndex+1)
 			continue
 		}
 		token.Write = writePermission
@@ -411,7 +412,7 @@ func updateAPIKeys() {
 		if expireStr != "" {
 			validUntil, err := time.Parse(time.RFC3339, expireStr)
 			if err != nil {
-				log.Errorf("api: invalid API key %s: %s", key, err)
+				log.Errorf("api: invalid expiry for API key #%d", keyIndex+1)
 				continue
 			}
 
@@ -456,19 +457,19 @@ func checkSessionCookie(r *http.Request) *AuthToken {
 	sess, ok := sessions[c.Value]
 	sessionsLock.Unlock()
 	if !ok {
-		log.Tracer(r.Context()).Tracef("api: provided session cookie %s is unknown", c.Value)
+		log.Tracer(r.Context()).Trace("api: provided session cookie is unknown")
 		return nil
 	}
 
 	// Check if session is still valid.
 	if sess.Expired() {
-		log.Tracer(r.Context()).Tracef("api: provided session cookie %s has expired", c.Value)
+		log.Tracer(r.Context()).Trace("api: provided session cookie has expired")
 		return nil
 	}
 
 	// Refresh session and return.
 	sess.Refresh(sessionCookieTTL)
-	log.Tracer(r.Context()).Tracef("api: session cookie %s is valid, refreshing", c.Value)
+	log.Tracer(r.Context()).Trace("api: session cookie is valid, refreshing")
 	return sess.token
 }
 

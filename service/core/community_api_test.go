@@ -21,4 +21,11 @@ func TestCommunityUpdateEndpoints(t *testing.T) {
 			t.Fatalf("%s must require user permission and POST", path)
 		}
 	}
+	endpoint, err := api.GetEndpointByPath("debug/core")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if endpoint.Read != api.PermitUser {
+		t.Fatal("core diagnostics must require an authenticated user")
+	}
 }

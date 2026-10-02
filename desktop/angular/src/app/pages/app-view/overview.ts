@@ -36,6 +36,7 @@ interface LocalAppProfile extends AppProfile {
 }
 
 @Component({
+  standalone: false,
   selector: 'app-settings-overview',
   templateUrl: './overview.html',
   styleUrls: ['../page.scss', './overview.scss'],
@@ -212,6 +213,7 @@ export class AppOverviewComponent implements OnInit, OnDestroy {
       // find all profiles that match the search term. For searchTerm="" thsi
       // will return all profiles.
       const filtered = this.searchService.searchList(profiles, searchTerm, {
+        disableHighlight: true,
         ignoreLocation: true,
         ignoreFieldNorm: true,
         threshold: 0.1,

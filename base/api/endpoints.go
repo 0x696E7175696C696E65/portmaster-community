@@ -504,16 +504,25 @@ func (e *Endpoint) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// maxAPIRequestBodySize limits buffered HTTP and database WebSocket input.
+const maxAPIRequestBodySize = 20_000_000 // 20 MB
+
 func readBody(w http.ResponseWriter, r *http.Request) (inputData []byte, ok bool) {
-	// Check for too long content in order to prevent death.
-	if r.ContentLength > 20000000 { // 20MB
+	if r.ContentLength > maxAPIRequestBodySize {
 		http.Error(w, "too much input data", http.StatusRequestEntityTooLarge)
 		return nil, false
 	}
 
-	// Read and close body.
+	// Content-Length is optional for chunked requests. Enforce the limit on
+	// actual bytes as well, before buffering the complete body in memory.
+	r.Body = http.MaxBytesReader(w, r.Body, maxAPIRequestBodySize)
 	inputData, err := io.ReadAll(r.Body)
 	if err != nil {
+		var limitErr *http.MaxBytesError
+		if errors.As(err, &limitErr) {
+			http.Error(w, "too much input data", http.StatusRequestEntityTooLarge)
+			return nil, false
+		}
 		http.Error(w, "failed to read body"+err.Error(), http.StatusInternalServerError)
 		return nil, false
 	}
