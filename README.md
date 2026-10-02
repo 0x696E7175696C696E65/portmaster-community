@@ -1,8 +1,8 @@
-# Portmaster Community — bytefrxst fork
+# Portmaster Community 
 
 An independent open-source fork of [Safing Portmaster](https://github.com/safing/portmaster), with account-free local features and user-controlled privacy routing.
 
-Repository: https://git.frxst.org/bytefrxst/portmaster
+Repository: https://github.com/0x696E7175696C696E65/portmaster-community
 
 ## Implemented changes
 
